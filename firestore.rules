@@ -105,7 +105,25 @@ service cloud.firestore {
         || (isStaff() && resource.data.status == 'confermata'
           && request.resource.data.status == 'consegnata'
           && request.resource.data.delivered_by == request.auth.uid
-          && onlyChanged(['status', 'delivered_at', 'delivered_by']));
+          && onlyChanged(['status', 'delivered_at', 'delivered_by']))
+        // consegna registrata per errore: la annulla un admin o il corriere che l'ha registrata
+        || (isStaff() && resource.data.status == 'consegnata'
+          && (isAdmin() || resource.data.delivered_by == request.auth.uid)
+          && request.resource.data.status == 'confermata'
+          && request.resource.data.delivered_at == null
+          && request.resource.data.delivered_by == null
+          && onlyChanged(['status', 'delivered_at', 'delivered_by']))
+        // modifica dei dati dell'ordine fino alla consegna: il cliente proprietario o un admin
+        || (resource.data.status in ['in_attesa', 'confermata']
+          && ((verified() && resource.data.user_id == request.auth.uid) || isAdmin())
+          && request.resource.data.updated_by == request.auth.uid
+          && request.resource.data.tipo in ['busta', 'pacco']
+          && request.resource.data.colli is int
+          && request.resource.data.colli >= 1 && request.resource.data.colli <= 99
+          && onlyChanged(['mitt_ragione_sociale', 'mitt_nome', 'mitt_cognome', 'mitt_telefono', 'mitt_email',
+              'pickup_date', 'pickup_time', 'pickup_indirizzo', 'pickup_cap', 'pickup_citta', 'pickup_provincia',
+              'dest_nome', 'dest_indirizzo', 'dest_cap', 'dest_citta', 'dest_provincia', 'dest_ref_nome',
+              'dest_ref_telefono', 'tipo', 'colli', 'peso', 'note', 'updated_at', 'updated_by']));
 
       allow delete: if false;
     }

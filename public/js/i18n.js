@@ -193,7 +193,19 @@ export const TR = {
   "new_order_title": "Νέα παραγγελία",
   "new_order_open": "Πατήστε για άνοιγμα",
   "enable_notifications": "🔔 Ενεργοποίηση ειδοποιήσεων",
-  "close": "Κλείσιμο"
+  "close": "Κλείσιμο",
+  "edit": "Επεξεργασία",
+  "edit_title": "Επεξεργασία αποστολής {code}",
+  "edit_intro": "Αλλάξτε ό,τι χρειάζεται και πατήστε «Αποθήκευση αλλαγών».",
+  "reprint_hint": "Αν έχετε ήδη τυπώσει την ετικέτα, τυπώστε την ξανά μετά την αλλαγή.",
+  "save_changes": "Αποθήκευση αλλαγών",
+  "flash_updated": "Η αποστολή {code} ενημερώθηκε.",
+  "flash_not_editable": "Αυτή η αποστολή δεν μπορεί πλέον να αλλάξει.",
+  "confirm_deliver": "Επιβεβαιώνετε την παράδοση στις {date}, ώρα {time};",
+  "undo_delivery": "Αναίρεση παράδοσης",
+  "confirm_undo_delivery": "Να αναιρεθεί η παράδοση; Η αποστολή θα επιστρέψει στις παραδόσεις.",
+  "flash_undo_delivery": "Η παράδοση της αποστολής {code} αναιρέθηκε.",
+  "ntfy_edited": "Αλλαγή παραγγελίας"
  },
  "en": {
   "app_title": "Shipment booking",
@@ -385,7 +397,19 @@ export const TR = {
   "new_order_title": "New order",
   "new_order_open": "Tap to open",
   "enable_notifications": "🔔 Enable notifications",
-  "close": "Close"
+  "close": "Close",
+  "edit": "Edit",
+  "edit_title": "Edit shipment {code}",
+  "edit_intro": "Change what you need and press “Save changes”.",
+  "reprint_hint": "If you've already printed the label, print it again after the change.",
+  "save_changes": "Save changes",
+  "flash_updated": "Shipment {code} updated.",
+  "flash_not_editable": "This shipment can no longer be changed.",
+  "confirm_deliver": "Confirm delivery on {date} at {time}?",
+  "undo_delivery": "Undo delivery",
+  "confirm_undo_delivery": "Undo the delivery? The shipment will go back to the deliveries list.",
+  "flash_undo_delivery": "Delivery of {code} undone.",
+  "ntfy_edited": "Order changed"
  },
  "it": {
   "app_title": "Prenotazione spedizioni",
@@ -577,7 +601,19 @@ export const TR = {
   "new_order_title": "Nuovo ordine",
   "new_order_open": "Tocca per aprire",
   "enable_notifications": "🔔 Attiva notifiche",
-  "close": "Chiudi"
+  "close": "Chiudi",
+  "edit": "Modifica",
+  "edit_title": "Modifica spedizione {code}",
+  "edit_intro": "Modifica ciò che serve e premi «Salva modifiche».",
+  "reprint_hint": "Se hai già stampato l'etichetta, ristampala dopo la modifica.",
+  "save_changes": "Salva modifiche",
+  "flash_updated": "Spedizione {code} aggiornata.",
+  "flash_not_editable": "Questa spedizione non si può più modificare.",
+  "confirm_deliver": "Confermi la consegna il {date} alle ore {time}?",
+  "undo_delivery": "Annulla consegna",
+  "confirm_undo_delivery": "Annullare la consegna? La spedizione tornerà tra quelle da consegnare.",
+  "flash_undo_delivery": "Consegna della spedizione {code} annullata.",
+  "ntfy_edited": "Ordine modificato"
  },
  "fr": {
   "app_title": "Réservation d'envois",
@@ -769,7 +805,19 @@ export const TR = {
   "new_order_title": "Nouvelle commande",
   "new_order_open": "Touchez pour ouvrir",
   "enable_notifications": "🔔 Activer les notifications",
-  "close": "Fermer"
+  "close": "Fermer",
+  "edit": "Modifier",
+  "edit_title": "Modifier l'envoi {code}",
+  "edit_intro": "Modifiez ce qu'il faut et appuyez sur « Enregistrer les modifications ».",
+  "reprint_hint": "Si vous avez déjà imprimé l'étiquette, réimprimez-la après la modification.",
+  "save_changes": "Enregistrer les modifications",
+  "flash_updated": "Envoi {code} mis à jour.",
+  "flash_not_editable": "Cet envoi ne peut plus être modifié.",
+  "confirm_deliver": "Confirmer la livraison le {date} à {time} ?",
+  "undo_delivery": "Annuler la livraison",
+  "confirm_undo_delivery": "Annuler la livraison ? L'envoi reviendra dans la liste des livraisons.",
+  "flash_undo_delivery": "Livraison de l'envoi {code} annulée.",
+  "ntfy_edited": "Commande modifiée"
  },
  "he": {
   "app_title": "הזמנת משלוחים",
@@ -961,7 +1009,19 @@ export const TR = {
   "new_order_title": "הזמנה חדשה",
   "new_order_open": "הקישו לפתיחה",
   "enable_notifications": "🔔 הפעלת התראות",
-  "close": "סגירה"
+  "close": "סגירה",
+  "edit": "עריכה",
+  "edit_title": "עריכת משלוח {code}",
+  "edit_intro": "שנו את מה שצריך ולחצו על „שמירת שינויים”.",
+  "reprint_hint": "אם כבר הדפסתם את התווית, הדפיסו אותה שוב אחרי השינוי.",
+  "save_changes": "שמירת שינויים",
+  "flash_updated": "המשלוח {code} עודכן.",
+  "flash_not_editable": "לא ניתן עוד לשנות משלוח זה.",
+  "confirm_deliver": "לאשר מסירה בתאריך {date} בשעה {time}?",
+  "undo_delivery": "ביטול מסירה",
+  "confirm_undo_delivery": "לבטל את המסירה? המשלוח יחזור לרשימת המסירות.",
+  "flash_undo_delivery": "המסירה של {code} בוטלה.",
+  "ntfy_edited": "הזמנה שונתה"
  },
  "es": {
   "app_title": "Reserva de envíos",
@@ -1153,7 +1213,19 @@ export const TR = {
   "new_order_title": "Nuevo pedido",
   "new_order_open": "Toca para abrir",
   "enable_notifications": "🔔 Activar notificaciones",
-  "close": "Cerrar"
+  "close": "Cerrar",
+  "edit": "Editar",
+  "edit_title": "Editar envío {code}",
+  "edit_intro": "Cambia lo que necesites y pulsa «Guardar cambios».",
+  "reprint_hint": "Si ya has impreso la etiqueta, vuelve a imprimirla después del cambio.",
+  "save_changes": "Guardar cambios",
+  "flash_updated": "Envío {code} actualizado.",
+  "flash_not_editable": "Este envío ya no se puede modificar.",
+  "confirm_deliver": "¿Confirmas la entrega el {date} a las {time}?",
+  "undo_delivery": "Deshacer entrega",
+  "confirm_undo_delivery": "¿Deshacer la entrega? El envío volverá a la lista de entregas.",
+  "flash_undo_delivery": "Entrega del envío {code} deshecha.",
+  "ntfy_edited": "Pedido modificado"
  },
  "de": {
   "app_title": "Sendungsbuchung",
@@ -1345,7 +1417,19 @@ export const TR = {
   "new_order_title": "Neuer Auftrag",
   "new_order_open": "Zum Öffnen tippen",
   "enable_notifications": "🔔 Benachrichtigungen aktivieren",
-  "close": "Schließen"
+  "close": "Schließen",
+  "edit": "Bearbeiten",
+  "edit_title": "Sendung {code} bearbeiten",
+  "edit_intro": "Ändern Sie, was nötig ist, und drücken Sie „Änderungen speichern“.",
+  "reprint_hint": "Falls Sie das Etikett schon gedruckt haben, drucken Sie es nach der Änderung erneut.",
+  "save_changes": "Änderungen speichern",
+  "flash_updated": "Sendung {code} aktualisiert.",
+  "flash_not_editable": "Diese Sendung kann nicht mehr geändert werden.",
+  "confirm_deliver": "Zustellung am {date} um {time} Uhr bestätigen?",
+  "undo_delivery": "Zustellung rückgängig machen",
+  "confirm_undo_delivery": "Zustellung rückgängig machen? Die Sendung kommt zurück in die Zustellliste.",
+  "flash_undo_delivery": "Zustellung von {code} rückgängig gemacht.",
+  "ntfy_edited": "Auftrag geändert"
  },
  "ru": {
   "app_title": "Бронирование отправлений",
@@ -1537,7 +1621,19 @@ export const TR = {
   "new_order_title": "Новый заказ",
   "new_order_open": "Нажмите, чтобы открыть",
   "enable_notifications": "🔔 Включить уведомления",
-  "close": "Закрыть"
+  "close": "Закрыть",
+  "edit": "Изменить",
+  "edit_title": "Изменение отправления {code}",
+  "edit_intro": "Измените нужное и нажмите «Сохранить изменения».",
+  "reprint_hint": "Если этикетка уже напечатана, распечатайте её заново после изменения.",
+  "save_changes": "Сохранить изменения",
+  "flash_updated": "Отправление {code} обновлено.",
+  "flash_not_editable": "Это отправление больше нельзя изменить.",
+  "confirm_deliver": "Подтвердить доставку {date} в {time}?",
+  "undo_delivery": "Отменить доставку",
+  "confirm_undo_delivery": "Отменить доставку? Отправление вернётся в список доставок.",
+  "flash_undo_delivery": "Доставка отправления {code} отменена.",
+  "ntfy_edited": "Заказ изменён"
  },
  "zh": {
   "app_title": "快递预约",
@@ -1729,6 +1825,18 @@ export const TR = {
   "new_order_title": "新订单",
   "new_order_open": "点击打开",
   "enable_notifications": "🔔 开启通知",
-  "close": "关闭"
+  "close": "关闭",
+  "edit": "编辑",
+  "edit_title": "编辑快递 {code}",
+  "edit_intro": "修改所需内容后点击“保存更改”。",
+  "reprint_hint": "如已打印标签，修改后请重新打印。",
+  "save_changes": "保存更改",
+  "flash_updated": "快递 {code} 已更新。",
+  "flash_not_editable": "此快递已无法修改。",
+  "confirm_deliver": "确认于 {date} {time} 送达？",
+  "undo_delivery": "撤销送达",
+  "confirm_undo_delivery": "撤销送达？该快递将回到待派送列表。",
+  "flash_undo_delivery": "快递 {code} 的送达已撤销。",
+  "ntfy_edited": "订单已修改"
  }
 };

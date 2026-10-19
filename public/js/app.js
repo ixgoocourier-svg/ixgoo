@@ -247,11 +247,11 @@ function newOrderAlert(s) {
 const routes = {
   "": viewHome, registrati: viewRegister, accedi: viewLogin, "password-dimenticata": viewForgot,
   verifica: viewVerify, "area-cliente": viewClient, nuova: viewNew, spedizione: viewDetail,
-  etichetta: viewLabel, admin: viewAdmin, utenti: viewUsers, corriere: viewCourier, profilo: viewProfile,
+  etichetta: viewLabel, modifica: viewEdit, admin: viewAdmin, utenti: viewUsers, corriere: viewCourier, profilo: viewProfile,
 };
 // pagine che richiedono login (e quali ruoli)
 const guards = {
-  "area-cliente": ["cliente"], nuova: ["cliente", "admin"], spedizione: [], etichetta: [],
+  "area-cliente": ["cliente"], nuova: ["cliente", "admin"], modifica: ["cliente", "admin"], spedizione: [], etichetta: [],
   admin: ["admin"], utenti: ["admin"], corriere: ["admin", "corriere"], profilo: [],
 };
 
@@ -483,14 +483,14 @@ const SHIP_FIELDS = ["mitt_ragione_sociale", "mitt_nome", "mitt_cognome", "mitt_
 // nessun campo obbligatorio: il cliente inserisce i dati che vuole (tipo e colli hanno un valore predefinito)
 const SHIP_REQUIRED = [];
 
-function notifyAdmins(s) {
+function notifyAdmins(s, edited = false) {
   const message = `${s.code}\n${itDate(s.pickup_date) || "—"} ${s.pickup_time || ""} · ${s.pickup_citta || "—"} → ${s.dest_citta || "—"}\n`
     + `${TR.el["type_" + s.tipo]} / ${TR.it["type_" + s.tipo]} × ${s.colli}`;
   // invio "a fondo perduto": se ntfy non risponde la prenotazione resta comunque salvata
   fetch("https://ntfy.sh/", {
     method: "POST",
     body: JSON.stringify({
-      topic: NTFY_TOPIC, title: "IxGoo · Νέα παραγγελία / Nuovo ordine", message,
+      topic: NTFY_TOPIC, title: edited ? "IxGoo · Αλλαγή παραγγελίας / Ordine modificato" : "IxGoo · Νέα παραγγελία / Nuovo ordine", message,
       tags: ["package"], priority: 4, click: `${location.origin}/#/spedizione/${encodeURIComponent(s.code)}`,
     }),
   }).catch(() => {});
@@ -502,7 +502,25 @@ function newCode() {
   return `IXG-${d.slice(2, 4)}${d.slice(5, 7)}${d.slice(8, 10)}-${rnd}`;
 }
 
-function viewNew(_, __, f, errors = {}) {
+// Modifica di un ordine esistente: stesso modulo, precompilato. Possibile fino alla consegna,
+// per il cliente proprietario e per gli admin (vedi anche firestore.rules).
+async function viewEdit(code) {
+  render(`<div class="empty">${esc(t("loading"))}</div>`);
+  let snap;
+  try { snap = await getDoc(doc(db, "shipments", code)); } catch (e) { return errorView(404); }
+  if (!snap.exists()) return errorView(404);
+  const s = snap.data();
+  if (!canEdit(s)) { flash(t("flash_not_editable"), "error"); return go(`#/spedizione/${code}`); }
+  const f = Object.fromEntries(SHIP_FIELDS.map((k) => [k, s[k] == null ? "" : String(s[k])]));
+  viewNew(null, null, f, {}, { code, s });
+}
+
+function canEdit(s) {
+  if (!["in_attesa", "confermata"].includes(s.status)) return false;
+  return role() === "admin" || (role() === "cliente" && s.user_id === state.user.uid);
+}
+
+function viewNew(_, __, f, errors = {}, edit = null) {
   const u = state.profile;
   // l'admin inserisce ordini per clienti non registrati: modulo vuoto, email facoltativa
   const byAdmin = role() === "admin";
@@ -513,13 +531,16 @@ function viewNew(_, __, f, errors = {}) {
     tipo: "pacco", colli: "1", pickup_date: todayIso(),
   });
   const section = (n, title, body) => `<section class="card"><h2><span class="num">${n}</span> ${esc(title)}</h2><div class="grid">${body}</div></section>`;
-  render(`<div class="medium"><h1>${esc(t("new_shipment_title"))}</h1><p class="muted">${esc(t(byAdmin ? "admin_new_intro" : "new_shipment_intro"))}</p>
+  const intro = edit
+    ? t("edit_intro") + (edit.s.status === "confermata" ? " " + t("reprint_hint") : "")
+    : t(byAdmin ? "admin_new_intro" : "new_shipment_intro");
+  render(`<div class="medium"><h1>${esc(edit ? t("edit_title", { code: edit.code }) : t("new_shipment_title"))}</h1><p class="muted">${esc(intro)}</p>
     ${Object.keys(errors).length ? `<div class="flash flash-error">${esc(t("form_has_errors"))}</div>` : ""}
     <form id="ship" novalidate>
     ${section(1, t("sender"), field("mitt_ragione_sociale", t("company_name"), f, errors, { required: false, col: "col-12" })
       + field("mitt_nome", t("contact_first_name"), f, errors, { required: false }) + field("mitt_cognome", t("contact_last_name"), f, errors, { required: false })
       + field("mitt_telefono", t("phone"), f, errors, { type: "tel", required: false }) + field("mitt_email", t("email"), f, errors, { type: "email", required: false }))}
-    ${section(2, t("pickup"), field("pickup_date", t("pickup_date"), f, errors, { required: false, type: "date", attrs: `min="${todayIso()}"` })
+    ${section(2, t("pickup"), field("pickup_date", t("pickup_date"), f, errors, { required: false, type: "date", attrs: edit ? "" : `min="${todayIso()}"` })
       + field("pickup_time", t("pickup_time"), f, errors, { required: false, type: "time" })
       + field("pickup_indirizzo", t("pickup_address"), f, errors, { required: false, col: "col-12" })
       + field("pickup_cap", t("zip"), f, errors, { required: false, col: "col-3" }) + field("pickup_citta", t("city"), f, errors, { required: false })
@@ -535,7 +556,9 @@ function viewNew(_, __, f, errors = {}) {
       + field("colli", t("parcels"), f, errors, { required: false, type: "number", col: "col-3", attrs: 'min="1" max="99"' })
       + field("peso", t("weight"), f, errors, { required: false, col: "col-3" })
       + field("note", t("notes"), f, errors, { type: "textarea", required: false, col: "col-12", hint: t("notes_hint") }))}
-    <button class="btn btn-primary btn-lg btn-block" type="submit">${esc(t("submit_booking"))}</button></form></div>`, t("nav_new_shipment"));
+    <button class="btn btn-primary btn-lg btn-block" type="submit">${esc(t(edit ? "save_changes" : "submit_booking"))}</button>
+    ${edit ? `<p style="text-align:center"><a href="#/spedizione/${esc(edit.code)}">← ${esc(edit.code)}</a></p>` : ""}</form></div>`,
+  edit ? t("edit_title", { code: edit.code }) : t("nav_new_shipment"));
   document.getElementById("ship").onsubmit = async (e) => {
     e.preventDefault();
     const d = formData(e.target);
@@ -546,12 +569,25 @@ function viewNew(_, __, f, errors = {}) {
     for (const k of ["pickup_cap", "dest_cap"]) if (d[k] && !ZIP_RE.test(d[k])) err[k] = t("err_zip");
     const colli = parseInt(d.colli || "1", 10);
     if (!(colli >= 1 && colli <= 99)) err.colli = t("err_parcels");
-    if (d.pickup_date && d.pickup_time && `${d.pickup_date} ${d.pickup_time}` < nowStr().slice(0, 16)) err.pickup_date = t("err_pickup_past");
-    if (Object.keys(err).length) { viewNew(null, null, d, err); window.scrollTo(0, 0); return; }
+    if (!edit && d.pickup_date && d.pickup_time && `${d.pickup_date} ${d.pickup_time}` < nowStr().slice(0, 16)) err.pickup_date = t("err_pickup_past");
+    if (Object.keys(err).length) { viewNew(null, null, d, err, edit); window.scrollTo(0, 0); return; }
     busy(e.target, true);
     const data = {};
     for (const k of SHIP_FIELDS) data[k] = d[k] || null;
     const now = nowStr();
+    if (edit) {
+      try {
+        await updateDoc(doc(db, "shipments", edit.code), { ...data, colli, updated_at: now, updated_by: state.user.uid });
+        if (role() === "cliente") notifyAdmins({ ...edit.s, ...data, colli, code: edit.code }, true);
+        flash(t("flash_updated", { code: edit.code }));
+        return go(`#/spedizione/${edit.code}`);
+      } catch (ex) {
+        console.error(ex);
+        busy(e.target, false);
+        flash(t("err_generic"), "error");
+        return viewNew(null, null, d, {}, edit);
+      }
+    }
     Object.assign(data, byAdmin ? {
       // ordine inserito dall'ufficio: nessun account cliente, già confermato
       colli, user_id: null, created_by: state.user.uid, status: "confermata", created_at: now,
@@ -634,13 +670,17 @@ function renderDetail(s, owner, confBy, delBy, createdBy) {
   const qrButtons = ["confermata", "consegnata"].includes(s.status)
     ? `<a class="btn btn-gold" href="#/etichetta/${esc(s.code)}">🖨 ${esc(t("print_label"))}</a>
        <button class="btn btn-ghost" id="png">${esc(t("download_qr"))}</button>` : "";
+  const editButton = canEdit(s) ? `<a class="btn btn-ghost" href="#/modifica/${esc(s.code)}">✏️ ${esc(t("edit"))}</a>` : "";
+  // annullare una consegna registrata per errore: admin, o il corriere che l'ha registrata
+  const canUndo = s.status === "consegnata" && staff && (r === "admin" || s.delivered_by === state.user.uid);
   const mapLink = (p) => `<a href="https://maps.google.com/?q=${encodeURIComponent(addr(p, s))}" target="_blank" rel="noopener">${esc(addr(p, s))}</a>`;
   const tel = (n) => `<a href="tel:${esc(n)}">${esc(n)}</a>`;
   const kv = (k, v) => `<dt>${esc(t(k))}</dt><dd>${v}</dd>`;
   render(`<div class="page-head"><div><div class="muted small">${esc(t("shipment"))}</div><h1 class="code">${esc(s.code)}</h1></div>
-    <div class="actions">${qrButtons}</div></div>
+    <div class="actions">${editButton}${qrButtons}</div></div>
     <div class="status-banner ${s.status}"><div><strong>${esc(t("status_" + s.status))}</strong> — ${esc(banner)}</div>
-    ${r === "cliente" && s.status === "in_attesa" ? `<button class="btn btn-danger" id="ccancel">${esc(t("cancel_booking"))}</button>` : ""}</div>
+    ${r === "cliente" && s.status === "in_attesa" ? `<button class="btn btn-danger" id="ccancel">${esc(t("cancel_booking"))}</button>` : ""}
+    ${canUndo ? `<button class="btn btn-ghost" id="undo">↩ ${esc(t("undo_delivery"))}</button>` : ""}</div>
     ${actions}
     <div class="detail-grid">
       <section class="card"><h2>📍 ${esc(t("pickup"))}</h2><dl class="kv">
@@ -676,6 +716,11 @@ function renderDetail(s, owner, confBy, delBy, createdBy) {
     act({ status: "annullata", cancelled_at: nowStr(), cancel_reason: formData(e.target).motivo || null }, t("flash_cancelled", { code: s.code }));
   });
   on("png", "onclick", () => downloadQrPng(s));
+  on("undo", "onclick", () => {
+    if (confirm(t("confirm_undo_delivery"))) {
+      act({ status: "confermata", delivered_at: null, delivered_by: null }, t("flash_undo_delivery", { code: s.code }));
+    }
+  });
   const form = document.getElementById("deliver");
   if (form) {
     const d = document.getElementById("d"); const h = document.getElementById("h"); const b = document.getElementById("deliver-btn");
@@ -686,6 +731,8 @@ function renderDetail(s, owner, confBy, delBy, createdBy) {
       const when = `${d.value} ${h.value}`;
       if (!d.value || !h.value) { flash(t("err_datetime"), "error"); return renderDetail(s, owner, confBy, delBy, createdBy); }
       if (when > nowStr(new Date(Date.now() + 5 * 60000)).slice(0, 16)) { flash(t("flash_deliver_future"), "error"); return renderDetail(s, owner, confBy, delBy, createdBy); }
+      // un pulsante grande si preme facilmente per sbaglio: chiedi conferma
+      if (!confirm(t("confirm_deliver", { date: itDate(d.value), time: h.value }))) return;
       busy(form, true);
       act({ status: "consegnata", delivered_at: `${when}:00`, delivered_by: state.user.uid },
         t("flash_delivered", { date: itDate(d.value), time: h.value }))

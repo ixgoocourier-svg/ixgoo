@@ -18,6 +18,11 @@ spagnolo, tedesco, russo e cinese.
 4. Nell'area del cliente compare subito il QR code con l'etichetta da stampare e attaccare al pacco.
 5. Il corriere scansiona il QR (si apre la spedizione, dopo il login) e preme
    **"Consegna effettuata il giorno … alle ore …"**. Il cliente vede la consegna nella sua area.
+   Prima di registrarla l'app chiede conferma; una consegna registrata per errore si annulla con
+   **Annulla consegna** (admin o il corriere che l'ha registrata).
+
+Il cliente può **modificare** il suo ordine fino alla consegna (pulsante Modifica); gli admin
+ricevono un avviso ntfy "Ordine modificato". Gli admin possono modificare qualsiasi ordine non consegnato.
 
 ## Ruoli
 
