@@ -108,7 +108,7 @@ function renderHeader() {
   let nav = "";
   if (state.user && state.user.emailVerified && state.profile) {
     if (r === "cliente") nav += link("#/area-cliente", "nav_my_shipments") + link("#/nuova", "nav_new_shipment");
-    else if (r === "admin") nav += link("#/admin", "nav_orders") + link("#/corriere", "nav_deliveries") + link("#/utenti", "nav_users");
+    else if (r === "admin") nav += link("#/admin", "nav_orders") + link("#/nuova", "nav_new_shipment") + link("#/corriere", "nav_deliveries") + link("#/utenti", "nav_users");
     else if (r === "corriere") nav += link("#/corriere", "nav_deliveries");
     nav += link("#/profilo", "nav_profile");
   }
@@ -174,7 +174,7 @@ const routes = {
 };
 // pagine che richiedono login (e quali ruoli)
 const guards = {
-  "area-cliente": ["cliente"], nuova: ["cliente"], spedizione: [], etichetta: [],
+  "area-cliente": ["cliente"], nuova: ["cliente", "admin"], spedizione: [], etichetta: [],
   admin: ["admin"], utenti: ["admin"], corriere: ["admin", "corriere"], profilo: [],
 };
 
@@ -411,19 +411,21 @@ function newCode() {
 
 function viewNew(_, __, f, errors = {}) {
   const u = state.profile;
-  f = f || {
+  // l'admin inserisce ordini per clienti non registrati: modulo vuoto, email facoltativa
+  const byAdmin = role() === "admin";
+  f = f || (byAdmin ? { tipo: "pacco", colli: "1", pickup_date: todayIso() } : {
     mitt_ragione_sociale: u.ragione_sociale || "", mitt_nome: u.nome, mitt_cognome: u.cognome,
     mitt_telefono: u.telefono || "", mitt_email: u.email, pickup_indirizzo: u.indirizzo || "",
     pickup_cap: u.cap || "", pickup_citta: u.citta || "", pickup_provincia: u.provincia || "",
     tipo: "pacco", colli: "1", pickup_date: todayIso(),
-  };
+  });
   const section = (n, title, body) => `<section class="card"><h2><span class="num">${n}</span> ${esc(title)}</h2><div class="grid">${body}</div></section>`;
-  render(`<div class="medium"><h1>${esc(t("new_shipment_title"))}</h1><p class="muted">${esc(t("new_shipment_intro"))}</p>
+  render(`<div class="medium"><h1>${esc(t("new_shipment_title"))}</h1><p class="muted">${esc(t(byAdmin ? "admin_new_intro" : "new_shipment_intro"))}</p>
     ${Object.keys(errors).length ? `<div class="flash flash-error">${esc(t("form_has_errors"))}</div>` : ""}
     <form id="ship" novalidate>
     ${section(1, t("sender"), field("mitt_ragione_sociale", t("company_name"), f, errors, { required: false, col: "col-12" })
       + field("mitt_nome", t("contact_first_name"), f, errors) + field("mitt_cognome", t("contact_last_name"), f, errors)
-      + field("mitt_telefono", t("phone"), f, errors, { type: "tel" }) + field("mitt_email", t("email"), f, errors, { type: "email" }))}
+      + field("mitt_telefono", t("phone"), f, errors, { type: "tel" }) + field("mitt_email", t("email"), f, errors, { type: "email", required: !byAdmin }))}
     ${section(2, t("pickup"), field("pickup_date", t("pickup_date"), f, errors, { type: "date", attrs: `min="${todayIso()}"` })
       + field("pickup_time", t("pickup_time"), f, errors, { type: "time" })
       + field("pickup_indirizzo", t("pickup_address"), f, errors, { col: "col-12" })
@@ -445,7 +447,7 @@ function viewNew(_, __, f, errors = {}) {
     e.preventDefault();
     const d = formData(e.target);
     const err = {};
-    require(d, SHIP_REQUIRED, err);
+    require(d, byAdmin ? SHIP_REQUIRED.filter((k) => k !== "mitt_email") : SHIP_REQUIRED, err);
     if (d.mitt_email && !EMAIL_RE.test(d.mitt_email)) err.mitt_email = t("err_email");
     for (const k of ["mitt_telefono", "dest_ref_telefono"]) if (d[k] && !PHONE_RE.test(d[k])) err[k] = t("err_phone");
     for (const k of ["pickup_cap", "dest_cap"]) if (d[k] && !ZIP_RE.test(d[k])) err[k] = t("err_zip");
@@ -456,8 +458,13 @@ function viewNew(_, __, f, errors = {}) {
     busy(e.target, true);
     const data = {};
     for (const k of SHIP_FIELDS) data[k] = d[k] || null;
-    Object.assign(data, {
-      colli, user_id: state.user.uid, status: "in_attesa", created_at: nowStr(),
+    const now = nowStr();
+    Object.assign(data, byAdmin ? {
+      // ordine inserito dall'ufficio: nessun account cliente, già confermato
+      colli, user_id: null, created_by: state.user.uid, status: "confermata", created_at: now,
+      confirmed_at: now, confirmed_by: state.user.uid, delivered_at: null, delivered_by: null, cancelled_at: null,
+    } : {
+      colli, user_id: state.user.uid, status: "in_attesa", created_at: now,
       confirmed_at: null, confirmed_by: null, delivered_at: null, delivered_by: null, cancelled_at: null,
     });
     for (let attempt = 0; attempt < 5; attempt++) {
@@ -465,7 +472,7 @@ function viewNew(_, __, f, errors = {}) {
       try {
         // se il codice esistesse già, la scrittura diventerebbe una modifica e le regole la rifiutano
         await setDoc(doc(db, "shipments", code), { ...data, code });
-        flash(t("flash_shipment_sent", { code }));
+        flash(t(byAdmin ? "flash_admin_created" : "flash_shipment_sent", { code }));
         return go(`#/spedizione/${code}`);
       } catch (ex) {
         if (ex.code !== "permission-denied" || attempt === 4) {
@@ -499,15 +506,15 @@ function viewDetail(code) {
     allowed();
     if (!snap.exists()) return errorView(404);
     const s = snap.data();
-    let owner = null; let confBy = null; let delBy = null;
+    let owner = null; let confBy = null; let delBy = null; let createdBy = null;
     if (isStaff()) {
-      [owner, confBy, delBy] = await Promise.all([personName(s.user_id), personName(s.confirmed_by), personName(s.delivered_by)]);
+      [owner, confBy, delBy, createdBy] = await Promise.all([personName(s.user_id), personName(s.confirmed_by), personName(s.delivered_by), personName(s.created_by)]);
     }
-    renderDetail(s, owner, confBy, delBy);
+    renderDetail(s, owner, confBy, delBy, createdBy);
   }, () => errorView(404)));
 }
 
-function renderDetail(s, owner, confBy, delBy) {
+function renderDetail(s, owner, confBy, delBy, createdBy) {
   const staff = isStaff();
   const r = role();
   const fullName = (u) => (u ? `${u.nome} ${u.cognome}` : "");
@@ -552,7 +559,8 @@ function renderDetail(s, owner, confBy, delBy) {
       <section class="card"><h2>📦 ${esc(t("details"))}</h2><dl class="kv">
         ${kv("type", esc(t("type_" + s.tipo)))}${kv("parcels", esc(s.colli))}
         ${s.peso ? kv("weight", esc(s.peso)) : ""}${s.note ? kv("notes", esc(s.note)) : ""}
-        ${staff && owner ? kv("customer", esc(`${owner.ragione_sociale || fullName(owner)} · ${owner.email}`)) : ""}</dl></section>
+        ${staff && owner ? kv("customer", esc(`${owner.ragione_sociale || fullName(owner)} · ${owner.email}`)) : ""}
+        ${staff && !s.user_id ? kv("customer", esc(t("manual_order", { name: fullName(createdBy) || "—" }))) : ""}</dl></section>
       <section class="card"><h2>🕓 ${esc(t("history"))}</h2><ul class="timeline">
         <li class="done">${esc(t("tl_created"))}: ${itDate(s.created_at)} ${hm(s.created_at)}</li>
         ${s.confirmed_at ? `<li class="done">${esc(t("tl_confirmed"))}: ${itDate(s.confirmed_at)} ${hm(s.confirmed_at)}${staff && confBy ? " · " + esc(fullName(confBy)) : ""}</li>`
@@ -582,8 +590,8 @@ function renderDetail(s, owner, confBy, delBy) {
     form.onsubmit = (e) => {
       e.preventDefault();
       const when = `${d.value} ${h.value}`;
-      if (!d.value || !h.value) { flash(t("err_datetime"), "error"); return renderDetail(s, owner, confBy, delBy); }
-      if (when > nowStr(new Date(Date.now() + 5 * 60000)).slice(0, 16)) { flash(t("flash_deliver_future"), "error"); return renderDetail(s, owner, confBy, delBy); }
+      if (!d.value || !h.value) { flash(t("err_datetime"), "error"); return renderDetail(s, owner, confBy, delBy, createdBy); }
+      if (when > nowStr(new Date(Date.now() + 5 * 60000)).slice(0, 16)) { flash(t("flash_deliver_future"), "error"); return renderDetail(s, owner, confBy, delBy, createdBy); }
       busy(form, true);
       act({ status: "consegnata", delivered_at: `${when}:00`, delivered_by: state.user.uid },
         t("flash_delivered", { date: itDate(d.value), time: h.value }))

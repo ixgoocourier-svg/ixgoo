@@ -12,6 +12,8 @@ spagnolo, tedesco, russo e cinese.
    conferma l'email con il link che Firebase gli invia.
 2. Prenota: mittente, data/ora e luogo di ritiro, destinatario con referente e telefono, busta o pacco.
 3. L'admin vede l'ordine in "Ordini" e preme **Conferma ricevimento ordine**.
+   L'admin può anche inserire direttamente un ordine per un cliente non registrato (menu
+   **Nuova spedizione**): nasce già confermato, con l'etichetta QR subito stampabile.
 4. Nell'area del cliente compare subito il QR code con l'etichetta da stampare e attaccare al pacco.
 5. Il corriere scansiona il QR (si apre la spedizione, dopo il login) e preme
    **"Consegna effettuata il giorno … alle ore …"**. Il cliente vede la consegna nella sua area.

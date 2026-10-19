@@ -176,7 +176,10 @@ export const TR = {
   "err_generic": "Κάτι πήγε στραβά. Δοκιμάστε ξανά.",
   "loading": "Φόρτωση…",
   "users_hint": "Οι κούριερ και οι διαχειριστές εγγράφονται όπως οι πελάτες· εδώ τους αλλάζετε ρόλο.",
-  "all_users": "Όλοι οι χρήστες"
+  "all_users": "Όλοι οι χρήστες",
+  "admin_new_intro": "Καταχωρίστε τα στοιχεία του πελάτη. Η αποστολή επιβεβαιώνεται αμέσως και μπορείτε να εκτυπώσετε την ετικέτα QR.",
+  "flash_admin_created": "Η αποστολή {code} καταχωρίστηκε και επιβεβαιώθηκε.",
+  "manual_order": "Μη εγγεγραμμένος πελάτης — καταχώριση από {name}"
  },
  "en": {
   "app_title": "Shipment booking",
@@ -351,7 +354,10 @@ export const TR = {
   "err_generic": "Something went wrong. Please try again.",
   "loading": "Loading…",
   "users_hint": "Couriers and administrators sign up like customers; here you change their role.",
-  "all_users": "All users"
+  "all_users": "All users",
+  "admin_new_intro": "Enter the customer's details. The shipment is confirmed immediately and you can print the QR label.",
+  "flash_admin_created": "Shipment {code} entered and confirmed.",
+  "manual_order": "Unregistered customer — entered by {name}"
  },
  "it": {
   "app_title": "Prenotazione spedizioni",
@@ -526,7 +532,10 @@ export const TR = {
   "err_generic": "Qualcosa è andato storto. Riprova.",
   "loading": "Caricamento…",
   "users_hint": "Corrieri e amministratori si registrano come i clienti; qui cambi il loro ruolo.",
-  "all_users": "Tutti gli utenti"
+  "all_users": "Tutti gli utenti",
+  "admin_new_intro": "Inserisci i dati del cliente. La spedizione viene confermata subito e puoi stampare l'etichetta QR.",
+  "flash_admin_created": "Spedizione {code} inserita e confermata.",
+  "manual_order": "Cliente non registrato — inserita da {name}"
  },
  "fr": {
   "app_title": "Réservation d'envois",
@@ -701,7 +710,10 @@ export const TR = {
   "err_generic": "Une erreur s'est produite. Réessayez.",
   "loading": "Chargement…",
   "users_hint": "Les coursiers et administrateurs s'inscrivent comme les clients ; ici vous changez leur rôle.",
-  "all_users": "Tous les utilisateurs"
+  "all_users": "Tous les utilisateurs",
+  "admin_new_intro": "Saisissez les coordonnées du client. L'envoi est confirmé immédiatement et vous pouvez imprimer l'étiquette QR.",
+  "flash_admin_created": "Envoi {code} enregistré et confirmé.",
+  "manual_order": "Client non inscrit — saisi par {name}"
  },
  "he": {
   "app_title": "הזמנת משלוחים",
@@ -876,7 +888,10 @@ export const TR = {
   "err_generic": "משהו השתבש. נסו שוב.",
   "loading": "טוען…",
   "users_hint": "שליחים ומנהלים נרשמים כמו לקוחות; כאן משנים את התפקיד שלהם.",
-  "all_users": "כל המשתמשים"
+  "all_users": "כל המשתמשים",
+  "admin_new_intro": "הזינו את פרטי הלקוח. המשלוח מאושר מיד ותוכלו להדפיס את תווית ה-QR.",
+  "flash_admin_created": "המשלוח {code} הוזן ואושר.",
+  "manual_order": "לקוח לא רשום — הוזן על ידי {name}"
  },
  "es": {
   "app_title": "Reserva de envíos",
@@ -1051,7 +1066,10 @@ export const TR = {
   "err_generic": "Algo ha ido mal. Inténtalo de nuevo.",
   "loading": "Cargando…",
   "users_hint": "Mensajeros y administradores se registran como clientes; aquí cambias su rol.",
-  "all_users": "Todos los usuarios"
+  "all_users": "Todos los usuarios",
+  "admin_new_intro": "Introduce los datos del cliente. El envío se confirma al instante y puedes imprimir la etiqueta QR.",
+  "flash_admin_created": "Envío {code} registrado y confirmado.",
+  "manual_order": "Cliente no registrado — registrado por {name}"
  },
  "de": {
   "app_title": "Sendungsbuchung",
@@ -1226,7 +1244,10 @@ export const TR = {
   "err_generic": "Etwas ist schiefgelaufen. Bitte erneut versuchen.",
   "loading": "Wird geladen…",
   "users_hint": "Kuriere und Administratoren registrieren sich wie Kunden; hier ändern Sie ihre Rolle.",
-  "all_users": "Alle Benutzer"
+  "all_users": "Alle Benutzer",
+  "admin_new_intro": "Geben Sie die Kundendaten ein. Die Sendung wird sofort bestätigt und Sie können das QR-Etikett drucken.",
+  "flash_admin_created": "Sendung {code} erfasst und bestätigt.",
+  "manual_order": "Nicht registrierter Kunde — erfasst von {name}"
  },
  "ru": {
   "app_title": "Бронирование отправлений",
@@ -1401,7 +1422,10 @@ export const TR = {
   "err_generic": "Что-то пошло не так. Попробуйте снова.",
   "loading": "Загрузка…",
   "users_hint": "Курьеры и администраторы регистрируются как клиенты; здесь вы меняете их роль.",
-  "all_users": "Все пользователи"
+  "all_users": "Все пользователи",
+  "admin_new_intro": "Введите данные клиента. Отправление подтверждается сразу, и можно распечатать QR-этикетку.",
+  "flash_admin_created": "Отправление {code} внесено и подтверждено.",
+  "manual_order": "Незарегистрированный клиент — внесено: {name}"
  },
  "zh": {
   "app_title": "快递预约",
@@ -1576,6 +1600,9 @@ export const TR = {
   "err_generic": "出错了，请重试。",
   "loading": "加载中…",
   "users_hint": "快递员和管理员与客户一样注册，您可在此更改其角色。",
-  "all_users": "全部用户"
+  "all_users": "全部用户",
+  "admin_new_intro": "请输入客户信息。快递将立即确认，您可以打印二维码标签。",
+  "flash_admin_created": "快递 {code} 已录入并确认。",
+  "manual_order": "未注册客户 — 由 {name} 录入"
  }
 };
