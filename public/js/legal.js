@@ -7,7 +7,7 @@ export const CONTROLLER = {
   name: "Iosif Xanthakis", // titolare / ragione sociale
   address: "Trifillias 4A, Athens, Greece", // indirizzo della sede
   vat: "132511610", // ΑΦΜ / partita IVA
-  email: "",     // email per richieste privacy
+  email: "ixgoo@outlook.com.gr", // email per richieste privacy
   phone: "",     // facoltativo
 };
 export const LAST_UPDATE = "19/10/2026";
