@@ -12,7 +12,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 import { LANGS, DEFAULT_LANG, RTL, TR } from "./i18n.js";
-import { legalHtml } from "./legal.js";
+import { legalHtml, CONTROLLER } from "./legal.js";
 
 const fb = initializeApp(firebaseConfig);
 const auth = getAuth(fb);
@@ -808,7 +808,7 @@ async function viewLabel(code) {
   const svg = makeQr(s).createSvgTag({ cellSize: 5, margin: 1, scalable: true });
   render(`<div class="actions no-print" style="justify-content:space-between;margin:0 auto 16px;max-width:760px">
     <a href="#/spedizione/${esc(s.code)}">← ${esc(s.code)}</a><button class="btn btn-gold" id="print">🖨 ${esc(t("print"))}</button></div>
-    <p class="muted small no-print" style="max-width:760px;margin:0 auto 16px">${esc(t("label_instructions"))}</p>
+    <div class="flash flash-info no-print" style="max-width:760px;margin:0 auto 16px">ℹ️ ${esc(t("label_instructions"))}</div>
     <div class="label"><div class="label-head"><img src="/img/logo-mark.jpg" alt="IxGoo"><span class="code">${esc(s.code)}</span></div>
     <div class="label-body"><div class="label-qr">${svg}<div class="scan-hint">${esc(t("scan_hint"))}</div></div>
     <div class="label-info">
@@ -820,7 +820,8 @@ async function viewLabel(code) {
         <div>${esc(t("pickup"))}: ${itDate(s.pickup_date)} ${esc(s.pickup_time)}</div></div>
       <div><h3>${esc(t("details"))}</h3><div>${esc(t("type_" + s.tipo))} · ${esc(t("parcels"))}: ${esc(s.colli)}${s.peso ? ` · ${esc(t("weight"))}: ${esc(s.peso)}` : ""}</div>
         ${s.note ? `<div>${esc(t("notes"))}: ${esc(s.note)}</div>` : ""}</div>
-    </div></div></div>`, `${t("label")} ${s.code}`);
+    </div></div>
+    <div class="label-foot">IxGoo Courier &amp; Logistics · ☎ <span class="ltr">${esc(CONTROLLER.phone)}</span> · ΓΕΜΗ ${esc(CONTROLLER.gemi)}</div></div>`, `${t("label")} ${s.code}`);
   document.getElementById("print").onclick = () => window.print();
 }
 

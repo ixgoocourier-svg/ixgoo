@@ -8,14 +8,15 @@ export const CONTROLLER = {
   address: "Trifillias 4A, Athens, Greece", // indirizzo della sede
   vat: "132511610", // ΑΦΜ / partita IVA
   email: "ixgoo@outlook.com.gr", // email per richieste privacy
-  phone: "",     // facoltativo
+  phone: "6970616611",
+  gemi: "181470203000", // numero ΓΕΜΗ
 };
 export const LAST_UPDATE = "19/10/2026";
 
 const missing = '<span class="todo">⚠</span>';
 const v = (x) => x || missing;
 const controllerBlock = () => `<p><strong>${v(CONTROLLER.name)}</strong><br>${v(CONTROLLER.address)}<br>
-  ΑΦΜ / VAT: ${v(CONTROLLER.vat)}<br>Email: ${CONTROLLER.email ? `<a href="mailto:${CONTROLLER.email}">${CONTROLLER.email}</a>` : missing}
+  ΑΦΜ / VAT: ${v(CONTROLLER.vat)}${CONTROLLER.gemi ? ` · ΓΕΜΗ: ${CONTROLLER.gemi}` : ""}<br>Email: ${CONTROLLER.email ? `<a href="mailto:${CONTROLLER.email}">${CONTROLLER.email}</a>` : missing}
   ${CONTROLLER.phone ? `<br>☎ <span class="ltr">${CONTROLLER.phone}</span>` : ""}</p>`;
 const mail = () => (CONTROLLER.email ? `<a href="mailto:${CONTROLLER.email}">${CONTROLLER.email}</a>` : missing);
 const DPA = `<a href="https://www.dpa.gr" target="_blank" rel="noopener">www.dpa.gr</a>`;
