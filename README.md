@@ -25,6 +25,13 @@ spagnolo, tedesco, russo e cinese.
 - Corrieri e altri admin si registrano come clienti; poi un admin cambia il loro ruolo da **Utenti**.
 - In alternativa, da questa cartella: `.venv/bin/python tools/admin.py ruolo <email> corriere`
 
+## Avvisi sul telefono degli admin (ntfy)
+
+A ogni nuova prenotazione di un cliente parte un avviso gratuito tramite [ntfy](https://ntfy.sh).
+Sul telefono: installa l'app **ntfy**, premi **+** e iscriviti al canale
+`ixgoo-ordini-xridg09bj0wbk477yt` (costante `NTFY_TOPIC` in `public/js/app.js`).
+L'avviso contiene solo codice, data/ora e città (il nome del canale è leggibile nel codice).
+
 ## Pubblicare una modifica
 
 Doppio clic su **`pubblica.command`** (oppure `.venv/bin/python tools/deploy.py`).

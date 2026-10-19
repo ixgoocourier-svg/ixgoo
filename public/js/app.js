@@ -20,6 +20,10 @@ const db = getFirestore(fb);
 const STATUS = ["in_attesa", "confermata", "consegnata", "annullata"];
 // questi indirizzi diventano admin alla registrazione (stessa lista in firestore.rules)
 const ADMIN_EMAILS = ["ixgoo@outlook.com.gr", "pierpaolomurgioni@gmail.com", "ixgoocourier@gmail.com"];
+// Avviso sul telefono degli admin a ogni nuova prenotazione, tramite ntfy (https://ntfy.sh, gratuito).
+// Gli admin si iscrivono a questo canale dall'app ntfy. Il nome è visibile a chi legge il codice,
+// quindi nell'avviso vanno solo dati non personali (codice, data/ora, città).
+const NTFY_TOPIC = "ixgoo-ordini-xridg09bj0wbk477yt";
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const PHONE_RE = /^\+?[0-9 ./()-]{6,20}$/;
 const ZIP_RE = /^[A-Za-z0-9 -]{3,10}$/;
@@ -405,6 +409,19 @@ const SHIP_REQUIRED = ["mitt_nome", "mitt_cognome", "mitt_telefono", "mitt_email
   "pickup_indirizzo", "pickup_cap", "pickup_citta", "dest_nome", "dest_indirizzo", "dest_cap", "dest_citta",
   "dest_ref_nome", "dest_ref_telefono", "tipo"];
 
+function notifyAdmins(s) {
+  const message = `${s.code}\n${itDate(s.pickup_date)} ${s.pickup_time} · ${s.pickup_citta} → ${s.dest_citta}\n`
+    + `${TR.el["type_" + s.tipo]} / ${TR.it["type_" + s.tipo]} × ${s.colli}`;
+  // invio "a fondo perduto": se ntfy non risponde la prenotazione resta comunque salvata
+  fetch("https://ntfy.sh/", {
+    method: "POST",
+    body: JSON.stringify({
+      topic: NTFY_TOPIC, title: "IxGoo · Νέα παραγγελία / Nuovo ordine", message,
+      tags: ["package"], priority: 4, click: `${location.origin}/#/spedizione/${encodeURIComponent(s.code)}`,
+    }),
+  }).catch(() => {});
+}
+
 function newCode() {
   const d = nowStr();
   const rnd = Array.from(crypto.getRandomValues(new Uint8Array(3)), (b) => b.toString(16).padStart(2, "0")).join("").toUpperCase();
@@ -474,6 +491,7 @@ function viewNew(_, __, f, errors = {}) {
       try {
         // se il codice esistesse già, la scrittura diventerebbe una modifica e le regole la rifiutano
         await setDoc(doc(db, "shipments", code), { ...data, code });
+        if (!byAdmin) notifyAdmins({ ...data, code });
         flash(t(byAdmin ? "flash_admin_created" : "flash_shipment_sent", { code }));
         return go(`#/spedizione/${code}`);
       } catch (ex) {
