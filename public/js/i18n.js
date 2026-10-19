@@ -189,7 +189,11 @@ export const TR = {
   "route_hint": "Με τα ↑ ↓ βάζετε τις παραδόσεις στη σειρά της διαδρομής σας. Η σειρά αποθηκεύεται.",
   "move_up": "Πάνω",
   "move_down": "Κάτω",
-  "reset_route": "Ταξινόμηση κατά παραλαβή"
+  "reset_route": "Ταξινόμηση κατά παραλαβή",
+  "new_order_title": "Νέα παραγγελία",
+  "new_order_open": "Πατήστε για άνοιγμα",
+  "enable_notifications": "🔔 Ενεργοποίηση ειδοποιήσεων",
+  "close": "Κλείσιμο"
  },
  "en": {
   "app_title": "Shipment booking",
@@ -377,7 +381,11 @@ export const TR = {
   "route_hint": "Use ↑ ↓ to put the deliveries in the order of your route. The order is saved.",
   "move_up": "Move up",
   "move_down": "Move down",
-  "reset_route": "Sort by pickup"
+  "reset_route": "Sort by pickup",
+  "new_order_title": "New order",
+  "new_order_open": "Tap to open",
+  "enable_notifications": "🔔 Enable notifications",
+  "close": "Close"
  },
  "it": {
   "app_title": "Prenotazione spedizioni",
@@ -565,7 +573,11 @@ export const TR = {
   "route_hint": "Usa ↑ ↓ per mettere le consegne nell'ordine del tuo giro. L'ordine viene salvato.",
   "move_up": "Sposta su",
   "move_down": "Sposta giù",
-  "reset_route": "Ordina per ritiro"
+  "reset_route": "Ordina per ritiro",
+  "new_order_title": "Nuovo ordine",
+  "new_order_open": "Tocca per aprire",
+  "enable_notifications": "🔔 Attiva notifiche",
+  "close": "Chiudi"
  },
  "fr": {
   "app_title": "Réservation d'envois",
@@ -753,7 +765,11 @@ export const TR = {
   "route_hint": "Utilisez ↑ ↓ pour placer les livraisons dans l'ordre de votre tournée. L'ordre est enregistré.",
   "move_up": "Monter",
   "move_down": "Descendre",
-  "reset_route": "Trier par enlèvement"
+  "reset_route": "Trier par enlèvement",
+  "new_order_title": "Nouvelle commande",
+  "new_order_open": "Touchez pour ouvrir",
+  "enable_notifications": "🔔 Activer les notifications",
+  "close": "Fermer"
  },
  "he": {
   "app_title": "הזמנת משלוחים",
@@ -941,7 +957,11 @@ export const TR = {
   "route_hint": "השתמשו ב-↑ ↓ כדי לסדר את המסירות לפי המסלול שלכם. הסדר נשמר.",
   "move_up": "הזז למעלה",
   "move_down": "הזז למטה",
-  "reset_route": "מיון לפי איסוף"
+  "reset_route": "מיון לפי איסוף",
+  "new_order_title": "הזמנה חדשה",
+  "new_order_open": "הקישו לפתיחה",
+  "enable_notifications": "🔔 הפעלת התראות",
+  "close": "סגירה"
  },
  "es": {
   "app_title": "Reserva de envíos",
@@ -1129,7 +1149,11 @@ export const TR = {
   "route_hint": "Usa ↑ ↓ para poner las entregas en el orden de tu ruta. El orden se guarda.",
   "move_up": "Subir",
   "move_down": "Bajar",
-  "reset_route": "Ordenar por recogida"
+  "reset_route": "Ordenar por recogida",
+  "new_order_title": "Nuevo pedido",
+  "new_order_open": "Toca para abrir",
+  "enable_notifications": "🔔 Activar notificaciones",
+  "close": "Cerrar"
  },
  "de": {
   "app_title": "Sendungsbuchung",
@@ -1317,7 +1341,11 @@ export const TR = {
   "route_hint": "Mit ↑ ↓ bringen Sie die Zustellungen in die Reihenfolge Ihrer Tour. Die Reihenfolge wird gespeichert.",
   "move_up": "Nach oben",
   "move_down": "Nach unten",
-  "reset_route": "Nach Abholung sortieren"
+  "reset_route": "Nach Abholung sortieren",
+  "new_order_title": "Neuer Auftrag",
+  "new_order_open": "Zum Öffnen tippen",
+  "enable_notifications": "🔔 Benachrichtigungen aktivieren",
+  "close": "Schließen"
  },
  "ru": {
   "app_title": "Бронирование отправлений",
@@ -1505,7 +1533,11 @@ export const TR = {
   "route_hint": "Кнопками ↑ ↓ расставьте доставки в порядке маршрута. Порядок сохраняется.",
   "move_up": "Выше",
   "move_down": "Ниже",
-  "reset_route": "Сортировать по забору"
+  "reset_route": "Сортировать по забору",
+  "new_order_title": "Новый заказ",
+  "new_order_open": "Нажмите, чтобы открыть",
+  "enable_notifications": "🔔 Включить уведомления",
+  "close": "Закрыть"
  },
  "zh": {
   "app_title": "快递预约",
@@ -1693,6 +1725,10 @@ export const TR = {
   "route_hint": "用 ↑ ↓ 按您的路线排列派送顺序，顺序会自动保存。",
   "move_up": "上移",
   "move_down": "下移",
-  "reset_route": "按取件排序"
+  "reset_route": "按取件排序",
+  "new_order_title": "新订单",
+  "new_order_open": "点击打开",
+  "enable_notifications": "🔔 开启通知",
+  "close": "关闭"
  }
 };

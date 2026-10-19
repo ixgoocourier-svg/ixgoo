@@ -110,11 +110,11 @@ function renderHeader() {
   document.documentElement.dir = RTL.includes(lang()) ? "rtl" : "ltr";
   const r = role();
   const path = location.hash.split("?")[0];
-  const link = (href, key) => `<a href="${href}" class="${path === href ? "active" : ""}">${esc(t(key))}</a>`;
+  const link = (href, key, count) => `<a href="${href}" class="${path === href ? "active" : ""}">${esc(t(key))}${count ? ` <span class="nav-badge">${count}</span>` : ""}</a>`;
   let nav = "";
   if (state.user && state.user.emailVerified && state.profile) {
     if (r === "cliente") nav += link("#/area-cliente", "nav_my_shipments") + link("#/nuova", "nav_new_shipment");
-    else if (r === "admin") nav += link("#/admin", "nav_orders") + link("#/nuova", "nav_new_shipment") + link("#/corriere", "nav_deliveries") + link("#/utenti", "nav_users");
+    else if (r === "admin") nav += link("#/admin", "nav_orders", state.pending) + link("#/nuova", "nav_new_shipment") + link("#/corriere", "nav_deliveries") + link("#/utenti", "nav_users");
     else if (r === "corriere") nav += link("#/corriere", "nav_deliveries");
     nav += link("#/profilo", "nav_profile");
   }
@@ -171,6 +171,70 @@ function homeFor() {
   return { admin: "#/admin", corriere: "#/corriere" }[role()] || "#/area-cliente";
 }
 
+// ------------------------------------------------------------------ avvisi per gli admin
+
+// Mentre un admin ha l'app aperta: contatore degli ordini in attesa, riquadro + suono
+// a ogni nuova prenotazione, e notifica del browser se la scheda non è in primo piano.
+let adminWatch = null;
+let knownPending = null;
+
+function startAdminWatch() {
+  if (adminWatch) return;
+  knownPending = null;
+  adminWatch = onSnapshot(query(collection(db, "shipments"), where("status", "==", "in_attesa")), (snap) => {
+    if (knownPending) {
+      snap.docChanges().forEach((ch) => {
+        if (ch.type === "added" && !knownPending.has(ch.doc.id)) newOrderAlert(ch.doc.data());
+      });
+    }
+    knownPending = new Set(snap.docs.map((d) => d.id));
+    state.pending = snap.size;
+    renderHeader();
+  }, () => {});
+}
+
+function stopAdminWatch() {
+  if (adminWatch) { adminWatch(); adminWatch = null; }
+  knownPending = null;
+  state.pending = 0;
+}
+
+function beep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [880, 1175].forEach((f, i) => {
+      const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.frequency.value = f; o.connect(g); g.connect(ctx.destination);
+      const at = ctx.currentTime + i * 0.18;
+      g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(0.25, at + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, at + 0.16);
+      o.start(at); o.stop(at + 0.17);
+    });
+  } catch (e) { /* audio non disponibile */ }
+}
+
+function newOrderAlert(s) {
+  const href = `#/spedizione/${encodeURIComponent(s.code)}`;
+  const body = `${s.code} · ${itDate(s.pickup_date)} ${s.pickup_time} · ${s.pickup_citta} → ${s.dest_citta}`;
+  beep();
+  let box = document.getElementById("toasts");
+  if (!box) { box = document.createElement("div"); box.id = "toasts"; document.body.appendChild(box); }
+  const el = document.createElement("div");
+  el.className = "toast";
+  el.innerHTML = `<button class="toast-close" aria-label="${esc(t("close"))}">×</button>
+    <div class="toast-title">📦 ${esc(t("new_order_title"))}</div><div class="toast-body">${esc(body)}</div>
+    <div class="toast-hint">${esc(t("new_order_open"))}</div>`;
+  el.onclick = (e) => { el.remove(); if (!e.target.closest(".toast-close")) go(href); };
+  box.appendChild(el);
+  setTimeout(() => el.remove(), 30000);
+  if (document.hidden && "Notification" in window && Notification.permission === "granted") {
+    try {
+      const n = new Notification(`IxGoo · ${t("new_order_title")}`, { body, icon: "/img/logo.jpg", tag: s.code });
+      n.onclick = () => { window.focus(); go(href); n.close(); };
+    } catch (e) { /* alcuni browser mobili non permettono notifiche fuori da un'app installata */ }
+  }
+}
+
 // ------------------------------------------------------------------ router
 
 const routes = {
@@ -218,12 +282,15 @@ onAuthStateChanged(auth, (user) => {
   if (profileUnsub) { profileUnsub(); profileUnsub = null; }
   state.profile = null;
   state.profileLoaded = !user;
-  if (!user) { state.ready = true; route(); return; }
+  if (!user) { stopAdminWatch(); state.ready = true; route(); return; }
   profileUnsub = onSnapshot(doc(db, "users", user.uid), (snap) => {
     const wasLoaded = state.profileLoaded;
     state.profile = snap.exists() ? snap.data() : null;
     state.profileLoaded = true;
     state.ready = true;
+    const isAdminNow = state.user && state.user.emailVerified && state.profile
+      && state.profile.role === "admin" && state.profile.active !== false;
+    if (isAdminNow) startAdminWatch(); else stopAdminWatch();
     // al primo caricamento, o se cambia ruolo/stato, ridisegna la pagina (non mentre si compila un modulo)
     if (!wasLoaded || !document.querySelector("#main form")) route();
   }, () => { state.profileLoaded = true; state.ready = true; route(); });
@@ -688,7 +755,9 @@ function viewAdmin(_, params) {
     if (!p.get("q")) p.delete("q");
     return `#/admin?${p}`;
   };
-  render(`<div class="page-head"><h1>${esc(t("nav_orders"))}</h1></div><div class="tabs" id="tabs"></div>
+  const askNotif = "Notification" in window && Notification.permission === "default";
+  render(`<div class="page-head"><h1>${esc(t("nav_orders"))}</h1>
+    ${askNotif ? `<button class="btn btn-ghost small" id="notif">${esc(t("enable_notifications"))}</button>` : ""}</div><div class="tabs" id="tabs"></div>
     <form class="search" id="search"><input name="q" value="${esc(q0)}" placeholder="${esc(t("search_placeholder"))}">
     <button class="btn btn-ghost" type="submit">${esc(t("search"))}</button></form>
     <div class="search" style="align-items:center;flex-wrap:wrap"><label for="sortkey" class="small muted">${esc(t("sort_by"))}</label>
@@ -700,6 +769,8 @@ function viewAdmin(_, params) {
     e.preventDefault();
     go(adminLink({ q: formData(e.target).q }));
   };
+  const nb = document.getElementById("notif");
+  if (nb) nb.onclick = () => { Notification.requestPermission().then(() => { beep(); route(); }); };
   document.getElementById("sortkey").onchange = (e) => go(adminLink({ ordina: e.target.value }));
   unsubs.push(onSnapshot(collection(db, "shipments"), (snap) => {
     allowed();

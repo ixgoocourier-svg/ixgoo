@@ -255,3 +255,19 @@ a[href^="tel:"], .ltr, .code { direction: ltr; unicode-bidi: isolate; }
 .route-moves { display: flex; flex-direction: column; gap: 6px; }
 .route-moves .btn { padding: 8px 14px; font-size: 1.1rem; }
 .route-moves .btn:disabled { opacity: .35; cursor: default; }
+
+/* avvisi nuovi ordini (admin) */
+.nav-badge { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px;
+  border-radius: 999px; background: var(--gold); color: var(--black); font-size: .75rem; font-weight: 700; }
+#toasts { position: fixed; inset-inline-end: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 10px;
+  z-index: 1000; max-width: calc(100vw - 32px); width: 360px; }
+.toast { position: relative; background: var(--black); color: #fff; border-inline-start: 5px solid var(--gold);
+  border-radius: 12px; padding: 14px 40px 14px 16px; box-shadow: 0 8px 30px rgba(0,0,0,.3); cursor: pointer;
+  animation: toast-in .25s ease-out; }
+.toast-title { font-weight: 700; color: var(--gold); margin-bottom: 4px; }
+.toast-body { font-size: .92rem; overflow-wrap: anywhere; }
+.toast-hint { font-size: .78rem; color: #b9b4aa; margin-top: 6px; }
+.toast-close { position: absolute; top: 6px; inset-inline-end: 8px; background: none; border: 0; color: #b9b4aa;
+  font-size: 1.4rem; cursor: pointer; line-height: 1; }
+@keyframes toast-in { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media print { #toasts { display: none; } }
