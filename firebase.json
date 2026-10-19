@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "ixgoo",
+    "site": "ixgoo-courier",
     "public": "public",
     "ignore": ["firebase.json", "**/.*"],
     "headers": [

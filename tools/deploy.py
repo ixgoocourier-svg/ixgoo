@@ -10,6 +10,7 @@ Avvio:  ./pubblica.command   (oppure: tools/.venv/bin/python tools/deploy.py)
 import gzip
 import hashlib
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -17,18 +18,20 @@ from google.auth.transport.requests import AuthorizedSession
 from google.oauth2 import service_account
 
 ROOT = Path(__file__).resolve().parent.parent
-KEY = ROOT / "firebase-key.json"
+# la chiave si può cambiare con la variabile IXGOO_KEY (utile per migrare tra progetti)
+KEY = Path(os.environ.get("IXGOO_KEY") or ROOT / "firebase-key.json")
 HOSTING = "https://firebasehosting.googleapis.com/v1beta1"
 RULES = "https://firebaserules.googleapis.com/v1"
 
 
-def session():
-    if not KEY.exists():
-        sys.exit("Manca firebase-key.json nella cartella del progetto.")
+def session(key=None):
+    key = Path(key or KEY)
+    if not key.exists():
+        sys.exit(f"Manca {key.name} nella cartella del progetto.")
     creds = service_account.Credentials.from_service_account_file(
-        str(KEY), scopes=["https://www.googleapis.com/auth/cloud-platform",
+        str(key), scopes=["https://www.googleapis.com/auth/cloud-platform",
                           "https://www.googleapis.com/auth/firebase"])
-    return AuthorizedSession(creds), json.loads(KEY.read_text())["project_id"]
+    return AuthorizedSession(creds), json.loads(key.read_text())["project_id"]
 
 
 def check(resp, what):
