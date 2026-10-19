@@ -73,6 +73,8 @@ const badge = (st) => `<span class="badge badge-${st}">${esc(t("status_" + st))}
 const isStaff = () => state.profile && ["admin", "corriere"].includes(state.profile.role);
 const role = () => (state.profile ? state.profile.role : null);
 const go = (hash) => { location.hash = hash; };
+// nome da mostrare: nome e cognome se ci sono, altrimenti l'email
+const personLabel = (u) => [u.nome, u.cognome].filter(Boolean).join(" ") || u.email || "—";
 // tutte le liste di ordini: per data e ora di ritiro, dalla più vicina alla più lontana
 const byPickup = (a, b) => `${a.pickup_date} ${a.pickup_time}`.localeCompare(`${b.pickup_date} ${b.pickup_time}`);
 const flash = (msg, cat = "success") => { pendingFlash = { msg, cat }; };
@@ -310,8 +312,8 @@ function viewHome() {
 }
 
 const REG_FIELDS = ["ragione_sociale", "nome", "cognome", "indirizzo", "cap", "citta", "provincia", "telefono", "email"];
-// alla registrazione bastano nome, cognome ed email; il resto è facoltativo
-const REG_REQUIRED = ["nome", "cognome", "email"];
+// alla registrazione serve solo l'email (per l'account); tutti gli altri dati sono facoltativi
+const REG_REQUIRED = ["email"];
 
 function validateProfile(d, errors) {
   require(d, REG_REQUIRED, errors);
@@ -322,7 +324,7 @@ function validateProfile(d, errors) {
 
 function profileFields(d) {
   return {
-    ragione_sociale: d.ragione_sociale || null, nome: d.nome, cognome: d.cognome,
+    ragione_sociale: d.ragione_sociale || null, nome: d.nome || null, cognome: d.cognome || null,
     indirizzo: d.indirizzo || null, cap: d.cap || null, citta: d.citta || null, provincia: d.provincia || null,
     telefono: d.telefono || null,
   };
@@ -330,7 +332,7 @@ function profileFields(d) {
 
 function profileGrid(f, errors, withEmail) {
   return field("ragione_sociale", t("company_name"), f, errors, { required: false, col: "col-12", hint: t("company_hint") })
-    + field("nome", t("first_name"), f, errors) + field("cognome", t("last_name"), f, errors)
+    + field("nome", t("first_name"), f, errors, { required: false }) + field("cognome", t("last_name"), f, errors, { required: false })
     + field("indirizzo", t("street"), f, errors, { required: false, col: "col-12", attrs: 'autocomplete="street-address"' })
     + field("cap", t("zip"), f, errors, { required: false, col: "col-3" }) + field("citta", t("city"), f, errors, { required: false })
     + field("provincia", t("region"), f, errors, { required: false, col: "col-3" })
@@ -501,7 +503,7 @@ function viewNew(_, __, f, errors = {}) {
   // l'admin inserisce ordini per clienti non registrati: modulo vuoto, email facoltativa
   const byAdmin = role() === "admin";
   f = f || (byAdmin ? { tipo: "pacco", colli: "1", pickup_date: todayIso() } : {
-    mitt_ragione_sociale: u.ragione_sociale || "", mitt_nome: u.nome, mitt_cognome: u.cognome,
+    mitt_ragione_sociale: u.ragione_sociale || "", mitt_nome: u.nome || "", mitt_cognome: u.cognome || "",
     mitt_telefono: u.telefono || "", mitt_email: u.email, pickup_indirizzo: u.indirizzo || "",
     pickup_cap: u.cap || "", pickup_citta: u.citta || "", pickup_provincia: u.provincia || "",
     tipo: "pacco", colli: "1", pickup_date: todayIso(),
@@ -605,7 +607,7 @@ function viewDetail(code) {
 function renderDetail(s, owner, confBy, delBy, createdBy) {
   const staff = isStaff();
   const r = role();
-  const fullName = (u) => (u ? `${u.nome} ${u.cognome}` : "");
+  const fullName = (u) => (u ? personLabel(u) : "");
   const now = nowStr();
   const banner = { in_attesa: t("banner_pending"), confermata: t("banner_confirmed"), annullata: t("banner_cancelled"),
     consegnata: t("banner_delivered", { date: itDate(s.delivered_at), time: hm(s.delivered_at) }) }[s.status];
@@ -819,7 +821,7 @@ function viewUsers() {
         const act = self ? `<span class="badge badge-consegnata">${esc(t("active"))}</span>`
           : `<button class="btn ${u.active !== false ? "btn-danger" : "btn-ghost"} small toggle" data-uid="${esc(u.id)}" data-active="${u.active !== false}">${esc(u.active !== false ? t("disable") : t("enable"))}</button>`;
         return `<tr><td><strong>${esc(u.ragione_sociale || "—")}</strong></td>
-          <td>${esc(`${u.nome} ${u.cognome}`)}<br><span class="muted small">${esc(u.email)} · <span class="ltr">${esc(u.telefono || "")}</span></span></td>
+          <td>${esc(personLabel(u))}<br><span class="muted small">${esc(u.email)} · <span class="ltr">${esc(u.telefono || "")}</span></span></td>
           <td>${roleSel}</td><td>${act}</td></tr>`;
       }).join("")}</tbody></table></div>`;
     el.querySelectorAll(".role-sel").forEach((sel) => {

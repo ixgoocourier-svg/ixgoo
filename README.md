@@ -8,8 +8,8 @@ spagnolo, tedesco, russo e cinese.
 
 ## Flusso
 
-1. Il cliente si registra (obbligatori solo nome, cognome ed email; ragione sociale, telefono e
-   indirizzo facoltativi) e
+1. Il cliente si registra (serve solo email e password; nome, cognome, ragione sociale, telefono e
+   indirizzo sono facoltativi) e
    conferma l'email con il link che Firebase gli invia.
 2. Prenota: mittente, data/ora e luogo di ritiro, destinatario con referente e telefono, busta o pacco.
 3. L'admin vede l'ordine in "Ordini" e preme **Conferma ricevimento ordine**.

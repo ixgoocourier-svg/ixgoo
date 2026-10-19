@@ -33,9 +33,7 @@ service cloud.firestore {
                 && request.auth.token.email in ['ixgoo@outlook.com.gr', 'pierpaolomurgioni@gmail.com',
                                                 'ixgoocourier@gmail.com']))
         && request.resource.data.active == true
-        && request.resource.data.email == request.auth.token.email
-        && nonEmpty(request.resource.data.nome)
-        && nonEmpty(request.resource.data.cognome);
+        && request.resource.data.email == request.auth.token.email;
 
       allow update: if signedIn() && (
         // il proprio profilo, senza toccare ruolo, stato o email
