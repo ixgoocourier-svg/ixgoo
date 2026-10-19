@@ -42,5 +42,6 @@ Pubblica regole di sicurezza e sito usando `firebase-key.json` (chiave del servi
 
 - `users/{uid}` — profilo e ruolo di ogni account
 - `shipments/{codice}` — spedizioni; l'ID è il codice `IXG-AAMMGG-XXXXXX`
+- `routes/{uid}` — il giro di ogni corriere: l'ordine delle consegne scelto con ↑ ↓ nella pagina Consegne
 
 La versione precedente con server Python (Cloud Run) è nel ramo `versione-server`.

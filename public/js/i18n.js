@@ -185,7 +185,11 @@ export const TR = {
   "sort_delivery": "Ημερομηνία και ώρα παράδοσης",
   "sort_asc": "↑ Αύξουσα",
   "sort_desc": "↓ Φθίνουσα",
-  "delivery": "Παράδοση"
+  "delivery": "Παράδοση",
+  "route_hint": "Με τα ↑ ↓ βάζετε τις παραδόσεις στη σειρά της διαδρομής σας. Η σειρά αποθηκεύεται.",
+  "move_up": "Πάνω",
+  "move_down": "Κάτω",
+  "reset_route": "Ταξινόμηση κατά παραλαβή"
  },
  "en": {
   "app_title": "Shipment booking",
@@ -369,7 +373,11 @@ export const TR = {
   "sort_delivery": "Delivery date and time",
   "sort_asc": "↑ Ascending",
   "sort_desc": "↓ Descending",
-  "delivery": "Delivery"
+  "delivery": "Delivery",
+  "route_hint": "Use ↑ ↓ to put the deliveries in the order of your route. The order is saved.",
+  "move_up": "Move up",
+  "move_down": "Move down",
+  "reset_route": "Sort by pickup"
  },
  "it": {
   "app_title": "Prenotazione spedizioni",
@@ -553,7 +561,11 @@ export const TR = {
   "sort_delivery": "Data e ora di consegna",
   "sort_asc": "↑ Crescente",
   "sort_desc": "↓ Decrescente",
-  "delivery": "Consegna"
+  "delivery": "Consegna",
+  "route_hint": "Usa ↑ ↓ per mettere le consegne nell'ordine del tuo giro. L'ordine viene salvato.",
+  "move_up": "Sposta su",
+  "move_down": "Sposta giù",
+  "reset_route": "Ordina per ritiro"
  },
  "fr": {
   "app_title": "Réservation d'envois",
@@ -737,7 +749,11 @@ export const TR = {
   "sort_delivery": "Date et heure de livraison",
   "sort_asc": "↑ Croissant",
   "sort_desc": "↓ Décroissant",
-  "delivery": "Livraison"
+  "delivery": "Livraison",
+  "route_hint": "Utilisez ↑ ↓ pour placer les livraisons dans l'ordre de votre tournée. L'ordre est enregistré.",
+  "move_up": "Monter",
+  "move_down": "Descendre",
+  "reset_route": "Trier par enlèvement"
  },
  "he": {
   "app_title": "הזמנת משלוחים",
@@ -921,7 +937,11 @@ export const TR = {
   "sort_delivery": "תאריך ושעת מסירה",
   "sort_asc": "↑ סדר עולה",
   "sort_desc": "↓ סדר יורד",
-  "delivery": "מסירה"
+  "delivery": "מסירה",
+  "route_hint": "השתמשו ב-↑ ↓ כדי לסדר את המסירות לפי המסלול שלכם. הסדר נשמר.",
+  "move_up": "הזז למעלה",
+  "move_down": "הזז למטה",
+  "reset_route": "מיון לפי איסוף"
  },
  "es": {
   "app_title": "Reserva de envíos",
@@ -1105,7 +1125,11 @@ export const TR = {
   "sort_delivery": "Fecha y hora de entrega",
   "sort_asc": "↑ Ascendente",
   "sort_desc": "↓ Descendente",
-  "delivery": "Entrega"
+  "delivery": "Entrega",
+  "route_hint": "Usa ↑ ↓ para poner las entregas en el orden de tu ruta. El orden se guarda.",
+  "move_up": "Subir",
+  "move_down": "Bajar",
+  "reset_route": "Ordenar por recogida"
  },
  "de": {
   "app_title": "Sendungsbuchung",
@@ -1289,7 +1313,11 @@ export const TR = {
   "sort_delivery": "Zustelldatum und -zeit",
   "sort_asc": "↑ Aufsteigend",
   "sort_desc": "↓ Absteigend",
-  "delivery": "Zustellung"
+  "delivery": "Zustellung",
+  "route_hint": "Mit ↑ ↓ bringen Sie die Zustellungen in die Reihenfolge Ihrer Tour. Die Reihenfolge wird gespeichert.",
+  "move_up": "Nach oben",
+  "move_down": "Nach unten",
+  "reset_route": "Nach Abholung sortieren"
  },
  "ru": {
   "app_title": "Бронирование отправлений",
@@ -1473,7 +1501,11 @@ export const TR = {
   "sort_delivery": "Дата и время доставки",
   "sort_asc": "↑ По возрастанию",
   "sort_desc": "↓ По убыванию",
-  "delivery": "Доставка"
+  "delivery": "Доставка",
+  "route_hint": "Кнопками ↑ ↓ расставьте доставки в порядке маршрута. Порядок сохраняется.",
+  "move_up": "Выше",
+  "move_down": "Ниже",
+  "reset_route": "Сортировать по забору"
  },
  "zh": {
   "app_title": "快递预约",
@@ -1657,6 +1689,10 @@ export const TR = {
   "sort_delivery": "送达日期和时间",
   "sort_asc": "↑ 升序",
   "sort_desc": "↓ 降序",
-  "delivery": "送达"
+  "delivery": "送达",
+  "route_hint": "用 ↑ ↓ 按您的路线排列派送顺序，顺序会自动保存。",
+  "move_up": "上移",
+  "move_down": "下移",
+  "reset_route": "按取件排序"
  }
 };

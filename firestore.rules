@@ -50,6 +50,16 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // giro del corriere: ordine delle consegne scelto da ciascun corriere/admin, solo per sé
+    match /routes/{uid} {
+      allow read: if isStaff() && request.auth.uid == uid;
+      allow create, update: if isStaff() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['order', 'updated_at'])
+        && request.resource.data.order is list
+        && request.resource.data.order.size() <= 500;
+      allow delete: if false;
+    }
+
     match /shipments/{code} {
       allow read: if isStaff()
         || (verified() && resource.data.user_id == request.auth.uid);

@@ -745,22 +745,60 @@ function viewUsers() {
 
 function viewCourier() {
   render(`<div class="page-head"><h1>${esc(t("nav_deliveries"))}</h1></div><p class="muted">${esc(t("courier_intro"))}</p><div id="list"><div class="empty">${esc(t("loading"))}</div></div>`, t("nav_deliveries"));
-  unsubs.push(onSnapshot(collection(db, "shipments"), (snap) => {
-    allowed();
-    const all = snap.docs.map((d) => d.data());
-    const todo = all.filter((s) => s.status === "confermata").sort(byPickup);
+  // il giro di ogni corriere: elenco dei codici nell'ordine scelto, salvato in routes/{uid}
+  const routeRef = doc(db, "routes", state.user.uid);
+  let all = null;
+  let route = [];
+  const saveRoute = (order) => setDoc(routeRef, { order, updated_at: nowStr() }).catch(() => { flash(t("err_generic"), "error"); route = []; draw(); });
+
+  function draw() {
+    const el = document.getElementById("list");
+    if (!el || !all) return;
+    const pos = (code) => { const i = route.indexOf(code); return i === -1 ? Infinity : i; };
+    // prima le spedizioni nell'ordine del giro, poi le nuove per data e ora di ritiro
+    const todo = all.filter((s) => s.status === "confermata")
+      .sort((a, b) => (pos(a.code) - pos(b.code)) || byPickup(a, b));
     const done = all.filter((s) => s.status === "consegnata" && (s.delivered_at || "").startsWith(todayIso()))
       .sort((a, b) => b.delivered_at.localeCompare(a.delivered_at));
-    const el = document.getElementById("list");
-    el.innerHTML = `<h2>${esc(t("to_deliver"))} (${todo.length})</h2>
-      ${todo.map((s) => `<a class="card" href="#/spedizione/${esc(s.code)}" style="display:block;text-decoration:none;color:inherit">
-        <div class="page-head" style="margin-bottom:6px"><span class="code">${esc(s.code)}</span><span class="badge badge-confermata">${esc(t("pickup"))} ${itDate(s.pickup_date)} ${esc(s.pickup_time)}</span></div>
-        <div class="small"><strong>${esc(t("pickup"))}:</strong> ${esc(s.mitt_ragione_sociale || `${s.mitt_nome} ${s.mitt_cognome}`)} — ${esc(addr("pickup", s))}</div>
-        <div class="small"><strong>${esc(t("destination"))}:</strong> ${esc(s.dest_nome)} — ${esc(addr("dest", s))}</div></a>`).join("")
+    el.innerHTML = `<div class="page-head" style="margin-bottom:8px"><h2 style="margin:0">${esc(t("to_deliver"))} (${todo.length})</h2>
+        ${todo.length > 1 ? `<button class="btn btn-ghost small" id="reset-route">${esc(t("reset_route"))}</button>` : ""}</div>
+      ${todo.length > 1 ? `<p class="small muted">${esc(t("route_hint"))}</p>` : ""}
+      ${todo.map((s, i) => `<div class="card route-card">
+        <div class="route-num">${i + 1}</div>
+        <a class="route-body" href="#/spedizione/${esc(s.code)}">
+          <div class="page-head" style="margin-bottom:6px"><span class="code">${esc(s.code)}</span><span class="badge badge-confermata">${esc(t("pickup"))} ${itDate(s.pickup_date)} ${esc(s.pickup_time)}</span></div>
+          <div class="small"><strong>${esc(t("pickup"))}:</strong> ${esc(s.mitt_ragione_sociale || `${s.mitt_nome} ${s.mitt_cognome}`)} — ${esc(addr("pickup", s))}</div>
+          <div class="small"><strong>${esc(t("destination"))}:</strong> ${esc(s.dest_nome)} — ${esc(addr("dest", s))}</div></a>
+        <div class="route-moves">
+          <button class="btn btn-ghost move" data-i="${i}" data-d="-1" ${i === 0 ? "disabled" : ""} aria-label="${esc(t("move_up"))}" title="${esc(t("move_up"))}">↑</button>
+          <button class="btn btn-ghost move" data-i="${i}" data-d="1" ${i === todo.length - 1 ? "disabled" : ""} aria-label="${esc(t("move_down"))}" title="${esc(t("move_down"))}">↓</button>
+        </div></div>`).join("")
         || `<div class="card empty">${esc(t("nothing_to_deliver"))}</div>`}
       <h2>${esc(t("delivered_today"))} (${done.length})</h2><div class="card" style="padding:8px 0">
       ${done.length ? `<table>${done.map((s) => `<tr class="rowlink" data-href="#/spedizione/${esc(s.code)}"><td class="code">${esc(s.code)}</td><td>${esc(s.dest_nome)}</td><td>${hm(s.delivered_at)}</td></tr>`).join("")}</table>` : '<div class="empty">—</div>'}</div>`;
     bindRowLinks(el);
+    el.querySelectorAll(".move").forEach((b) => {
+      b.onclick = () => {
+        const order = todo.map((s) => s.code);
+        const i = Number(b.dataset.i); const j = i + Number(b.dataset.d);
+        [order[i], order[j]] = [order[j], order[i]];
+        route = order;
+        draw();
+        saveRoute(order);
+      };
+    });
+    const reset = document.getElementById("reset-route");
+    if (reset) reset.onclick = () => { route = []; draw(); saveRoute([]); };
+  }
+
+  unsubs.push(onSnapshot(routeRef, (snap) => {
+    route = snap.exists() && Array.isArray(snap.data().order) ? snap.data().order : [];
+    draw();
+  }, () => { route = []; draw(); }));
+  unsubs.push(onSnapshot(collection(db, "shipments"), (snap) => {
+    allowed();
+    all = snap.docs.map((d) => d.data());
+    draw();
   }, denied));
 }
 
