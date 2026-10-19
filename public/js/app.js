@@ -310,7 +310,8 @@ function viewHome() {
 }
 
 const REG_FIELDS = ["ragione_sociale", "nome", "cognome", "indirizzo", "cap", "citta", "provincia", "telefono", "email"];
-const REG_REQUIRED = ["nome", "cognome", "indirizzo", "cap", "citta", "telefono", "email"];
+// alla registrazione bastano nome, cognome ed email; il resto è facoltativo
+const REG_REQUIRED = ["nome", "cognome", "email"];
 
 function validateProfile(d, errors) {
   require(d, REG_REQUIRED, errors);
@@ -322,18 +323,18 @@ function validateProfile(d, errors) {
 function profileFields(d) {
   return {
     ragione_sociale: d.ragione_sociale || null, nome: d.nome, cognome: d.cognome,
-    indirizzo: d.indirizzo, cap: d.cap, citta: d.citta, provincia: d.provincia || null,
-    telefono: d.telefono,
+    indirizzo: d.indirizzo || null, cap: d.cap || null, citta: d.citta || null, provincia: d.provincia || null,
+    telefono: d.telefono || null,
   };
 }
 
 function profileGrid(f, errors, withEmail) {
   return field("ragione_sociale", t("company_name"), f, errors, { required: false, col: "col-12", hint: t("company_hint") })
     + field("nome", t("first_name"), f, errors) + field("cognome", t("last_name"), f, errors)
-    + field("indirizzo", t("street"), f, errors, { col: "col-12", attrs: 'autocomplete="street-address"' })
-    + field("cap", t("zip"), f, errors, { col: "col-3" }) + field("citta", t("city"), f, errors)
+    + field("indirizzo", t("street"), f, errors, { required: false, col: "col-12", attrs: 'autocomplete="street-address"' })
+    + field("cap", t("zip"), f, errors, { required: false, col: "col-3" }) + field("citta", t("city"), f, errors, { required: false })
     + field("provincia", t("region"), f, errors, { required: false, col: "col-3" })
-    + field("telefono", t("phone"), f, errors, { type: "tel" })
+    + field("telefono", t("phone"), f, errors, { type: "tel", required: false })
     + (withEmail ? field("email", t("email"), f, errors, { type: "email" }) : "");
 }
 
