@@ -38,6 +38,16 @@ Sul telefono: installa l'app **ntfy**, premi **+** e iscriviti al canale
 `ixgoo-ordini-xridg09bj0wbk477yt` (costante `NTFY_TOPIC` in `public/js/app.js`).
 L'avviso contiene solo codice, data/ora e città (il nome del canale è leggibile nel codice).
 
+## Privacy e GDPR
+
+- Pagine **Privacy**, **Termini** e **Cookie** (piè di pagina), testi in `public/js/legal.js`
+  (greco, inglese, italiano). I dati del titolare si completano in `CONTROLLER` in cima al file.
+  ⚠ Bozza tecnica: da far verificare a un consulente legale.
+- Nessun cookie di profilazione/statistica; solo archiviazione tecnica (avviso informativo, nessun consenso necessario).
+- Nessuna richiesta a Google Fonts o CDN: caratteri di sistema e libreria QR in `public/js/vendor/`.
+- Profilo → **I miei dati**: scarica tutti i propri dati (JSON) ed elimina l'account.
+- Firestore in UE (regione `eur3`).
+
 ## Pubblicare una modifica
 
 Doppio clic su **`pubblica.command`** (oppure `.venv/bin/python tools/deploy.py`).

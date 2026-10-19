@@ -5,13 +5,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
   getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword,
   signOut, sendEmailVerification, sendPasswordResetEmail, reauthenticateWithCredential,
-  EmailAuthProvider, updatePassword,
+  EmailAuthProvider, updatePassword, deleteUser,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, onSnapshot,
+  getFirestore, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, collection, query, where, onSnapshot,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 import { LANGS, DEFAULT_LANG, RTL, TR } from "./i18n.js";
+import { legalHtml } from "./legal.js";
 
 const fb = initializeApp(firebaseConfig);
 const auth = getAuth(fb);
@@ -132,6 +133,9 @@ function renderHeader() {
     <a class="brand" href="#/"><img src="/img/logo-mark.jpg" alt="IxGoo Courier & Logistics"></a>
     <nav class="nav">${nav}<select class="lang-select" id="lang" aria-label="${esc(t("language"))}">${opts}</select></nav>`;
   document.getElementById("lang").onchange = (e) => setLang(e.target.value);
+  document.querySelector("footer").innerHTML = `IxGoo Courier &amp; Logistics · More than deliveries<br>
+    <a href="#/privacy">${esc(t("footer_privacy"))}</a> · <a href="#/termini">${esc(t("footer_terms"))}</a> · <a href="#/cookie">${esc(t("footer_cookies"))}</a>`;
+  cookieNotice();
   const lo = document.getElementById("logout");
   if (lo) lo.onclick = async () => { await signOut(auth); go("#/"); };
 }
@@ -245,7 +249,8 @@ function newOrderAlert(s) {
 // ------------------------------------------------------------------ router
 
 const routes = {
-  "": viewHome, registrati: viewRegister, accedi: viewLogin, "password-dimenticata": viewForgot,
+  "": viewHome, privacy: () => viewLegal("privacy"), termini: () => viewLegal("terms"), cookie: () => viewLegal("cookies"),
+  registrati: viewRegister, accedi: viewLogin, "password-dimenticata": viewForgot,
   verifica: viewVerify, "area-cliente": viewClient, nuova: viewNew, spedizione: viewDetail,
   etichetta: viewLabel, modifica: viewEdit, admin: viewAdmin, utenti: viewUsers, corriere: viewCourier, profilo: viewProfile,
 };
@@ -283,6 +288,26 @@ function route() {
 }
 
 window.addEventListener("hashchange", route);
+
+// Avviso informativo sui cookie: l'app usa solo archiviazione tecnica necessaria, quindi non serve
+// un consenso; l'avviso si chiude con OK e non ricompare.
+function cookieNotice() {
+  let seen = false;
+  try { seen = localStorage.getItem("ixgoo_cookie_ok") === "1"; } catch (e) { /* storage non disponibile */ }
+  let box = document.getElementById("cookie-notice");
+  if (seen) { if (box) box.remove(); return; }
+  if (!box) { box = document.createElement("div"); box.id = "cookie-notice"; document.body.appendChild(box); }
+  box.innerHTML = `<span>🍪 ${esc(t("cookie_notice"))} <a href="#/cookie">${esc(t("cookie_more"))}</a></span>
+    <button class="btn btn-gold small" type="button">${esc(t("ok"))}</button>`;
+  box.querySelector("button").onclick = () => {
+    try { localStorage.setItem("ixgoo_cookie_ok", "1"); } catch (e) { /* ignorato */ }
+    box.remove();
+  };
+}
+
+function viewLegal(kind) {
+  render(`<article class="medium card legal">${legalHtml(kind, lang())}</article>`, t({ privacy: "footer_privacy", terms: "footer_terms", cookies: "footer_cookies" }[kind]));
+}
 
 onAuthStateChanged(auth, (user) => {
   state.user = user;
@@ -352,7 +377,9 @@ function viewRegister(_, __, f = {}, errors = {}) {
     ${field("password", t("password"), {}, errors, { type: "password", hint: t("password_hint"), attrs: 'autocomplete="new-password"' })}
     ${field("password2", t("password_repeat"), {}, errors, { type: "password", attrs: 'autocomplete="new-password"' })}
     <div class="field col-12 ${errors.privacy ? "has-error" : ""}"><label class="check"><input type="checkbox" name="privacy" value="1" ${f.privacy ? "checked" : ""}>
-    <span>${esc(t("privacy_accept"))}</span></label>${errors.privacy ? `<div class="error">${esc(errors.privacy)}</div>` : ""}</div>
+    <span>${t("privacy_accept2", {
+      privacy: `<a href="#/privacy" target="_blank">${esc(t("privacy_link"))}</a>`,
+      terms: `<a href="#/termini" target="_blank">${esc(t("terms_link"))}</a>` })}</span></label>${errors.privacy ? `<div class="error">${esc(errors.privacy)}</div>` : ""}</div>
     </div><p></p><button class="btn btn-primary btn-lg btn-block" type="submit">${esc(t("register_submit"))}</button>
     <p class="small muted" style="text-align:center">${esc(t("have_account"))} <a href="#/accedi">${esc(t("nav_login"))}</a></p></form></div>`,
   t("nav_register"));
@@ -364,7 +391,7 @@ function viewRegister(_, __, f = {}, errors = {}) {
     validateProfile(d, err);
     if ((d.password || "").length < 8) err.password = t("err_password_len");
     else if (d.password !== d.password2) err.password2 = t("err_password_match");
-    if (!d.privacy) err.privacy = t("err_privacy");
+    if (!d.privacy) err.privacy = t("err_terms");
     if (Object.keys(err).length) return viewRegister(null, null, d, err);
     busy(e.target, true);
     try {
@@ -948,6 +975,26 @@ function viewCourier() {
 
 // ------------------------------------------------------------------ profilo
 
+// Diritto di accesso e portabilità: profilo e spedizioni dell'utente in un file JSON
+async function exportMyData() {
+  const uid = state.user.uid;
+  let shipments = [];
+  try {
+    const snap = await getDocs(query(collection(db, "shipments"), where("user_id", "==", uid)));
+    shipments = snap.docs.map((d) => d.data()).sort(byPickup);
+  } catch (e) { /* lo staff potrebbe non avere spedizioni proprie */ }
+  const data = {
+    exported_at: nowStr(), service: "IxGoo Courier & Logistics",
+    account: { uid, email: state.user.email, email_verified: state.user.emailVerified },
+    profile: state.profile, shipments,
+  };
+  const a = document.createElement("a");
+  a.download = `ixgoo-dati-${todayIso()}.json`;
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+
 function viewProfile(_, __, f, errors = {}) {
   const u = state.profile;
   f = f || { ...u };
@@ -957,7 +1004,40 @@ function viewProfile(_, __, f, errors = {}) {
     <form class="card" id="pwd"><h2>${esc(t("change_password"))}</h2><div class="grid">
     ${field("old", t("current_password"), {}, errors, { type: "password", attrs: 'autocomplete="current-password"' })}
     ${field("new", t("new_password"), {}, errors, { type: "password", hint: t("password_hint"), attrs: 'autocomplete="new-password"' })}</div><p></p>
-    <button class="btn btn-ghost" type="submit">${esc(t("change_password"))}</button></form></div>`, t("nav_profile"));
+    <button class="btn btn-ghost" type="submit">${esc(t("change_password"))}</button></form>
+    <section class="card"><h2>${esc(t("gdpr_title"))}</h2><p class="muted">${esc(t("gdpr_intro"))}
+      <a href="#/privacy">${esc(t("footer_privacy"))}</a></p>
+      <div class="actions"><button class="btn btn-ghost" id="export" type="button">⬇ ${esc(t("download_data"))}</button></div>
+      <details style="margin-top:14px" ${errors.delpwd ? "open" : ""}><summary class="btn btn-danger">${esc(t("delete_account"))}</summary>
+        <form id="delacc" style="margin-top:12px"><p class="small muted">${esc(t("delete_account_note"))}</p>
+          <div class="grid">${field("delpwd", t("current_password"), {}, errors, { type: "password", col: "col-12", attrs: 'autocomplete="current-password"' })}</div><p></p>
+          <button class="btn btn-danger" type="submit">${esc(t("delete_account"))}</button></form></details></section></div>`, t("nav_profile"));
+  document.getElementById("export").onclick = exportMyData;
+  document.getElementById("delacc").onsubmit = async (e) => {
+    e.preventDefault();
+    if (!confirm(t("confirm_delete_account"))) return;
+    busy(e.target, true);
+    try {
+      // conferma l'identità, poi elimina giro, profilo e credenziali
+      await reauthenticateWithCredential(state.user, EmailAuthProvider.credential(state.user.email, formData(e.target).delpwd));
+    } catch (ex) {
+      return viewProfile(null, null, null, { delpwd: t("err_old_password") });
+    }
+    try {
+      const uid = state.user.uid;
+      if (isStaff()) await deleteDoc(doc(db, "routes", uid)).catch(() => {});
+      stopAdminWatch();
+      if (profileUnsub) { profileUnsub(); profileUnsub = null; }
+      await deleteDoc(doc(db, "users", uid));
+      await deleteUser(auth.currentUser);
+      flash(t("flash_account_deleted"));
+      go("#/");
+    } catch (ex) {
+      console.error(ex);
+      flash(t("err_generic"), "error");
+      route();
+    }
+  };
   document.getElementById("prof").onsubmit = async (e) => {
     e.preventDefault();
     const d = formData(e.target);

@@ -22,8 +22,9 @@
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
-  font-family: "Noto Sans", "Noto Sans Hebrew", system-ui, -apple-system, "Segoe UI",
-    "PingFang SC", "Microsoft YaHei", sans-serif;
+  /* caratteri di sistema: niente richieste a Google Fonts */
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    "Noto Sans", "Noto Sans Hebrew", "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 16px;
   line-height: 1.5;
   color: var(--ink);
@@ -271,3 +272,19 @@ a[href^="tel:"], .ltr, .code { direction: ltr; unicode-bidi: isolate; }
   font-size: 1.4rem; cursor: pointer; line-height: 1; }
 @keyframes toast-in { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
 @media print { #toasts { display: none; } }
+
+/* avviso cookie */
+#cookie-notice { position: fixed; left: 16px; right: 16px; bottom: 16px; max-width: 720px; margin: 0 auto; z-index: 900;
+  background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,.15);
+  padding: 12px 14px; display: flex; gap: 12px; align-items: center; justify-content: space-between; font-size: .9rem; }
+@media (max-width: 520px) { #cookie-notice { flex-direction: column; align-items: stretch; } }
+@media print { #cookie-notice { display: none; } }
+
+/* pagine legali */
+.legal h1 { font-size: 1.5rem; }
+.legal h2 { font-size: 1.05rem; margin-top: 1.4em; }
+.legal p, .legal li { line-height: 1.6; }
+.legal ul { padding-inline-start: 1.2em; }
+.legal table { margin: 10px 0; font-size: .88rem; }
+.legal .todo { background: #fff3d6; color: #8a5a00; padding: 0 6px; border-radius: 4px; font-weight: 700; }
+footer a { color: var(--muted); }
