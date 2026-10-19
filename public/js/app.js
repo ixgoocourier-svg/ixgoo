@@ -69,6 +69,8 @@ const badge = (st) => `<span class="badge badge-${st}">${esc(t("status_" + st))}
 const isStaff = () => state.profile && ["admin", "corriere"].includes(state.profile.role);
 const role = () => (state.profile ? state.profile.role : null);
 const go = (hash) => { location.hash = hash; };
+// tutte le liste di ordini: per data e ora di ritiro, dalla più vicina alla più lontana
+const byPickup = (a, b) => `${a.pickup_date} ${a.pickup_time}`.localeCompare(`${b.pickup_date} ${b.pickup_time}`);
 const flash = (msg, cat = "success") => { pendingFlash = { msg, cat }; };
 
 function formData(form) {
@@ -374,7 +376,7 @@ function viewClient() {
   const q = query(collection(db, "shipments"), where("user_id", "==", state.user.uid));
   unsubs.push(onSnapshot(q, (snap) => {
     allowed();
-    const rows = snap.docs.map((d) => d.data()).sort((a, b) => b.created_at.localeCompare(a.created_at));
+    const rows = snap.docs.map((d) => d.data()).sort(byPickup);
     const el = document.getElementById("list");
     if (!el) return;
     el.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr><th>${esc(t("code"))}</th><th>${esc(t("pickup"))}</th>
@@ -658,35 +660,55 @@ async function viewLabel(code) {
 // ------------------------------------------------------------------ admin
 
 function viewAdmin(_, params) {
-  const status = params.get("stato") || "in_attesa";
+  const status = params.get("stato") || "tutte";
   const q0 = params.get("q") || "";
+  const sortKey = params.get("ordina") === "consegna" ? "consegna" : "ritiro";
+  const desc = params.get("dir") === "desc";
+  // ricostruisce il link della pagina cambiando solo alcuni parametri
+  const adminLink = (changes) => {
+    const p = new URLSearchParams({ stato: status, q: q0, ordina: sortKey, dir: desc ? "desc" : "asc", ...changes });
+    if (!p.get("q")) p.delete("q");
+    return `#/admin?${p}`;
+  };
   render(`<div class="page-head"><h1>${esc(t("nav_orders"))}</h1></div><div class="tabs" id="tabs"></div>
     <form class="search" id="search"><input name="q" value="${esc(q0)}" placeholder="${esc(t("search_placeholder"))}">
     <button class="btn btn-ghost" type="submit">${esc(t("search"))}</button></form>
+    <div class="search" style="align-items:center;flex-wrap:wrap"><label for="sortkey" class="small muted">${esc(t("sort_by"))}</label>
+    <select id="sortkey" class="sort-select"><option value="ritiro" ${sortKey === "ritiro" ? "selected" : ""}>${esc(t("sort_pickup"))}</option>
+    <option value="consegna" ${sortKey === "consegna" ? "selected" : ""}>${esc(t("sort_delivery"))}</option></select>
+    <a class="btn btn-ghost small" href="${adminLink({ dir: desc ? "asc" : "desc" })}">${esc(t(desc ? "sort_desc" : "sort_asc"))}</a></div>
     <div class="card" style="padding:8px 0" id="list"><div class="empty">${esc(t("loading"))}</div></div>`, t("nav_orders"));
   document.getElementById("search").onsubmit = (e) => {
     e.preventDefault();
-    go(`#/admin?stato=${encodeURIComponent(status)}&q=${encodeURIComponent(formData(e.target).q)}`);
+    go(adminLink({ q: formData(e.target).q }));
   };
+  document.getElementById("sortkey").onchange = (e) => go(adminLink({ ordina: e.target.value }));
   unsubs.push(onSnapshot(collection(db, "shipments"), (snap) => {
     allowed();
     const all = snap.docs.map((d) => d.data());
     const counts = Object.fromEntries(STATUS.map((st) => [st, all.filter((s) => s.status === st).length]));
-    document.getElementById("tabs").innerHTML = STATUS.map((st) => `<a href="#/admin?stato=${st}" class="${status === st ? "active" : ""}">${esc(t("status_" + st))}<span class="count">${counts[st]}</span></a>`).join("")
-      + `<a href="#/admin?stato=tutte" class="${STATUS.includes(status) ? "" : "active"}">${esc(t("all"))}</a>`;
+    document.getElementById("tabs").innerHTML = `<a href="${adminLink({ stato: "tutte" })}" class="${STATUS.includes(status) ? "" : "active"}">${esc(t("all"))}<span class="count">${all.length}</span></a>`
+      + STATUS.map((st) => `<a href="${adminLink({ stato: st })}" class="${status === st ? "active" : ""}">${esc(t("status_" + st))}<span class="count">${counts[st]}</span></a>`).join("");
     let rows = all.filter((s) => !STATUS.includes(status) || s.status === status);
     const q = q0.toLowerCase();
     if (q) rows = rows.filter((s) => ["code", "mitt_ragione_sociale", "mitt_cognome", "dest_nome", "dest_citta"].some((f) => (s[f] || "").toLowerCase().includes(q)));
-    rows.sort(["in_attesa", "confermata"].includes(status)
-      ? (a, b) => `${a.pickup_date} ${a.pickup_time}`.localeCompare(`${b.pickup_date} ${b.pickup_time}`)
-      : (a, b) => b.created_at.localeCompare(a.created_at));
+    if (sortKey === "consegna") {
+      // per consegna: prima le spedizioni consegnate in ordine di data e ora, poi le altre (per ritiro)
+      const done = rows.filter((s) => s.delivered_at).sort((a, b) => a.delivered_at.localeCompare(b.delivered_at));
+      if (desc) done.reverse();
+      rows = done.concat(rows.filter((s) => !s.delivered_at).sort(byPickup));
+    } else {
+      rows.sort(byPickup);
+      if (desc) rows.reverse();
+    }
     const el = document.getElementById("list");
     el.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr><th>${esc(t("code"))}</th><th>${esc(t("pickup"))}</th><th>${esc(t("sender"))}</th>
-      <th>${esc(t("destination"))}</th><th>${esc(t("status"))}</th></tr></thead><tbody>${rows.map((s) => `
+      <th>${esc(t("destination"))}</th><th>${esc(t("delivery"))}</th><th>${esc(t("status"))}</th></tr></thead><tbody>${rows.map((s) => `
       <tr class="rowlink" data-href="#/spedizione/${esc(s.code)}"><td class="code">${esc(s.code)}</td>
       <td><strong>${itDate(s.pickup_date)} ${esc(s.pickup_time)}</strong><br><span class="muted small">${esc(s.pickup_citta)}</span></td>
       <td>${esc(s.mitt_ragione_sociale || `${s.mitt_nome} ${s.mitt_cognome}`)}<br><span class="muted small ltr">${esc(s.mitt_telefono)}</span></td>
-      <td>${esc(s.dest_nome)}<br><span class="muted small">${esc(s.dest_citta)}</span></td><td>${badge(s.status)}</td></tr>`).join("")}</tbody></table></div>`
+      <td>${esc(s.dest_nome)}<br><span class="muted small">${esc(s.dest_citta)}</span></td>
+      <td>${s.delivered_at ? `<strong>${itDate(s.delivered_at)} ${hm(s.delivered_at)}</strong>` : '<span class="muted">—</span>'}</td><td>${badge(s.status)}</td></tr>`).join("")}</tbody></table></div>`
       : `<div class="empty">${esc(t("no_results"))}</div>`;
     bindRowLinks(el);
   }, denied));
@@ -726,8 +748,7 @@ function viewCourier() {
   unsubs.push(onSnapshot(collection(db, "shipments"), (snap) => {
     allowed();
     const all = snap.docs.map((d) => d.data());
-    const todo = all.filter((s) => s.status === "confermata")
-      .sort((a, b) => `${a.pickup_date} ${a.pickup_time}`.localeCompare(`${b.pickup_date} ${b.pickup_time}`));
+    const todo = all.filter((s) => s.status === "confermata").sort(byPickup);
     const done = all.filter((s) => s.status === "consegnata" && (s.delivered_at || "").startsWith(todayIso()))
       .sort((a, b) => b.delivered_at.localeCompare(a.delivered_at));
     const el = document.getElementById("list");

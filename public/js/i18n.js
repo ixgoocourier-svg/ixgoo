@@ -179,7 +179,13 @@ export const TR = {
   "all_users": "Όλοι οι χρήστες",
   "admin_new_intro": "Καταχωρίστε τα στοιχεία του πελάτη. Η αποστολή επιβεβαιώνεται αμέσως και μπορείτε να εκτυπώσετε την ετικέτα QR.",
   "flash_admin_created": "Η αποστολή {code} καταχωρίστηκε και επιβεβαιώθηκε.",
-  "manual_order": "Μη εγγεγραμμένος πελάτης — καταχώριση από {name}"
+  "manual_order": "Μη εγγεγραμμένος πελάτης — καταχώριση από {name}",
+  "sort_by": "Ταξινόμηση κατά",
+  "sort_pickup": "Ημερομηνία και ώρα παραλαβής",
+  "sort_delivery": "Ημερομηνία και ώρα παράδοσης",
+  "sort_asc": "↑ Αύξουσα",
+  "sort_desc": "↓ Φθίνουσα",
+  "delivery": "Παράδοση"
  },
  "en": {
   "app_title": "Shipment booking",
@@ -357,7 +363,13 @@ export const TR = {
   "all_users": "All users",
   "admin_new_intro": "Enter the customer's details. The shipment is confirmed immediately and you can print the QR label.",
   "flash_admin_created": "Shipment {code} entered and confirmed.",
-  "manual_order": "Unregistered customer — entered by {name}"
+  "manual_order": "Unregistered customer — entered by {name}",
+  "sort_by": "Sort by",
+  "sort_pickup": "Pickup date and time",
+  "sort_delivery": "Delivery date and time",
+  "sort_asc": "↑ Ascending",
+  "sort_desc": "↓ Descending",
+  "delivery": "Delivery"
  },
  "it": {
   "app_title": "Prenotazione spedizioni",
@@ -535,7 +547,13 @@ export const TR = {
   "all_users": "Tutti gli utenti",
   "admin_new_intro": "Inserisci i dati del cliente. La spedizione viene confermata subito e puoi stampare l'etichetta QR.",
   "flash_admin_created": "Spedizione {code} inserita e confermata.",
-  "manual_order": "Cliente non registrato — inserita da {name}"
+  "manual_order": "Cliente non registrato — inserita da {name}",
+  "sort_by": "Ordina per",
+  "sort_pickup": "Data e ora di ritiro",
+  "sort_delivery": "Data e ora di consegna",
+  "sort_asc": "↑ Crescente",
+  "sort_desc": "↓ Decrescente",
+  "delivery": "Consegna"
  },
  "fr": {
   "app_title": "Réservation d'envois",
@@ -713,7 +731,13 @@ export const TR = {
   "all_users": "Tous les utilisateurs",
   "admin_new_intro": "Saisissez les coordonnées du client. L'envoi est confirmé immédiatement et vous pouvez imprimer l'étiquette QR.",
   "flash_admin_created": "Envoi {code} enregistré et confirmé.",
-  "manual_order": "Client non inscrit — saisi par {name}"
+  "manual_order": "Client non inscrit — saisi par {name}",
+  "sort_by": "Trier par",
+  "sort_pickup": "Date et heure d'enlèvement",
+  "sort_delivery": "Date et heure de livraison",
+  "sort_asc": "↑ Croissant",
+  "sort_desc": "↓ Décroissant",
+  "delivery": "Livraison"
  },
  "he": {
   "app_title": "הזמנת משלוחים",
@@ -891,7 +915,13 @@ export const TR = {
   "all_users": "כל המשתמשים",
   "admin_new_intro": "הזינו את פרטי הלקוח. המשלוח מאושר מיד ותוכלו להדפיס את תווית ה-QR.",
   "flash_admin_created": "המשלוח {code} הוזן ואושר.",
-  "manual_order": "לקוח לא רשום — הוזן על ידי {name}"
+  "manual_order": "לקוח לא רשום — הוזן על ידי {name}",
+  "sort_by": "מיון לפי",
+  "sort_pickup": "תאריך ושעת איסוף",
+  "sort_delivery": "תאריך ושעת מסירה",
+  "sort_asc": "↑ סדר עולה",
+  "sort_desc": "↓ סדר יורד",
+  "delivery": "מסירה"
  },
  "es": {
   "app_title": "Reserva de envíos",
@@ -1069,7 +1099,13 @@ export const TR = {
   "all_users": "Todos los usuarios",
   "admin_new_intro": "Introduce los datos del cliente. El envío se confirma al instante y puedes imprimir la etiqueta QR.",
   "flash_admin_created": "Envío {code} registrado y confirmado.",
-  "manual_order": "Cliente no registrado — registrado por {name}"
+  "manual_order": "Cliente no registrado — registrado por {name}",
+  "sort_by": "Ordenar por",
+  "sort_pickup": "Fecha y hora de recogida",
+  "sort_delivery": "Fecha y hora de entrega",
+  "sort_asc": "↑ Ascendente",
+  "sort_desc": "↓ Descendente",
+  "delivery": "Entrega"
  },
  "de": {
   "app_title": "Sendungsbuchung",
@@ -1247,7 +1283,13 @@ export const TR = {
   "all_users": "Alle Benutzer",
   "admin_new_intro": "Geben Sie die Kundendaten ein. Die Sendung wird sofort bestätigt und Sie können das QR-Etikett drucken.",
   "flash_admin_created": "Sendung {code} erfasst und bestätigt.",
-  "manual_order": "Nicht registrierter Kunde — erfasst von {name}"
+  "manual_order": "Nicht registrierter Kunde — erfasst von {name}",
+  "sort_by": "Sortieren nach",
+  "sort_pickup": "Abholdatum und -zeit",
+  "sort_delivery": "Zustelldatum und -zeit",
+  "sort_asc": "↑ Aufsteigend",
+  "sort_desc": "↓ Absteigend",
+  "delivery": "Zustellung"
  },
  "ru": {
   "app_title": "Бронирование отправлений",
@@ -1425,7 +1467,13 @@ export const TR = {
   "all_users": "Все пользователи",
   "admin_new_intro": "Введите данные клиента. Отправление подтверждается сразу, и можно распечатать QR-этикетку.",
   "flash_admin_created": "Отправление {code} внесено и подтверждено.",
-  "manual_order": "Незарегистрированный клиент — внесено: {name}"
+  "manual_order": "Незарегистрированный клиент — внесено: {name}",
+  "sort_by": "Сортировать по",
+  "sort_pickup": "Дата и время забора",
+  "sort_delivery": "Дата и время доставки",
+  "sort_asc": "↑ По возрастанию",
+  "sort_desc": "↓ По убыванию",
+  "delivery": "Доставка"
  },
  "zh": {
   "app_title": "快递预约",
@@ -1603,6 +1651,12 @@ export const TR = {
   "all_users": "全部用户",
   "admin_new_intro": "请输入客户信息。快递将立即确认，您可以打印二维码标签。",
   "flash_admin_created": "快递 {code} 已录入并确认。",
-  "manual_order": "未注册客户 — 由 {name} 录入"
+  "manual_order": "未注册客户 — 由 {name} 录入",
+  "sort_by": "排序方式",
+  "sort_pickup": "取件日期和时间",
+  "sort_delivery": "送达日期和时间",
+  "sort_asc": "↑ 升序",
+  "sort_desc": "↓ 降序",
+  "delivery": "送达"
  }
 };

@@ -243,3 +243,6 @@ dl.kv dd { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
 
 /* numeri di telefono e codici restano sinistra→destra anche in ebraico */
 a[href^="tel:"], .ltr, .code { direction: ltr; unicode-bidi: isolate; }
+
+/* selettore ordinamento nella lista ordini */
+.sort-select { padding: 9px 10px; border: 1px solid #d6d1c5; border-radius: 9px; font: inherit; background: #fff; color: var(--ink); }
