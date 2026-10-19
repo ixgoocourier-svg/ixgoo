@@ -68,7 +68,11 @@ function itDate(v) {
   return `${v.slice(8, 10)}/${v.slice(5, 7)}/${v.slice(0, 4)}`;
 }
 const hm = (v) => (v && v.length >= 16 ? v.slice(11, 16) : "");
-const addr = (p, s) => `${s[p + "_indirizzo"]}, ${s[p + "_cap"]} ${s[p + "_citta"]}${s[p + "_provincia"] ? ` (${s[p + "_provincia"]})` : ""}`;
+const addr = (p, s) => [s[p + "_indirizzo"], [s[p + "_cap"], s[p + "_citta"]].filter(Boolean).join(" ")].filter(Boolean).join(", ")
+  + (s[p + "_provincia"] ? ` (${s[p + "_provincia"]})` : "");
+// chi spedisce: ragione sociale, altrimenti nome e cognome del referente, altrimenti "—"
+const senderName = (s) => s.mitt_ragione_sociale || [s.mitt_nome, s.mitt_cognome].filter(Boolean).join(" ") || "—";
+const contactName = (s) => [s.mitt_nome, s.mitt_cognome].filter(Boolean).join(" ");
 const badge = (st) => `<span class="badge badge-${st}">${esc(t("status_" + st))}</span>`;
 const isStaff = () => state.profile && ["admin", "corriere"].includes(state.profile.role);
 const role = () => (state.profile ? state.profile.role : null);
@@ -475,9 +479,9 @@ const SHIP_FIELDS = ["mitt_ragione_sociale", "mitt_nome", "mitt_cognome", "mitt_
   "pickup_date", "pickup_time", "pickup_indirizzo", "pickup_cap", "pickup_citta", "pickup_provincia",
   "dest_nome", "dest_indirizzo", "dest_cap", "dest_citta", "dest_provincia", "dest_ref_nome",
   "dest_ref_telefono", "tipo", "colli", "peso", "note"];
-const SHIP_REQUIRED = ["mitt_nome", "mitt_cognome", "mitt_telefono", "mitt_email", "pickup_date", "pickup_time",
-  "pickup_indirizzo", "pickup_cap", "pickup_citta", "dest_nome", "dest_indirizzo", "dest_cap", "dest_citta",
-  "dest_ref_nome", "dest_ref_telefono", "tipo"];
+// obbligatori solo i dati senza cui il corriere non può lavorare: quando/dove ritirare e dove consegnare
+const SHIP_REQUIRED = ["pickup_date", "pickup_time", "pickup_indirizzo", "pickup_citta",
+  "dest_nome", "dest_indirizzo", "dest_citta", "tipo"];
 
 function notifyAdmins(s) {
   const message = `${s.code}\n${itDate(s.pickup_date)} ${s.pickup_time} · ${s.pickup_citta} → ${s.dest_citta}\n`
@@ -513,18 +517,18 @@ function viewNew(_, __, f, errors = {}) {
     ${Object.keys(errors).length ? `<div class="flash flash-error">${esc(t("form_has_errors"))}</div>` : ""}
     <form id="ship" novalidate>
     ${section(1, t("sender"), field("mitt_ragione_sociale", t("company_name"), f, errors, { required: false, col: "col-12" })
-      + field("mitt_nome", t("contact_first_name"), f, errors) + field("mitt_cognome", t("contact_last_name"), f, errors)
-      + field("mitt_telefono", t("phone"), f, errors, { type: "tel" }) + field("mitt_email", t("email"), f, errors, { type: "email", required: !byAdmin }))}
+      + field("mitt_nome", t("contact_first_name"), f, errors, { required: false }) + field("mitt_cognome", t("contact_last_name"), f, errors, { required: false })
+      + field("mitt_telefono", t("phone"), f, errors, { type: "tel", required: false }) + field("mitt_email", t("email"), f, errors, { type: "email", required: false }))}
     ${section(2, t("pickup"), field("pickup_date", t("pickup_date"), f, errors, { type: "date", attrs: `min="${todayIso()}"` })
       + field("pickup_time", t("pickup_time"), f, errors, { type: "time" })
       + field("pickup_indirizzo", t("pickup_address"), f, errors, { col: "col-12" })
-      + field("pickup_cap", t("zip"), f, errors, { col: "col-3" }) + field("pickup_citta", t("city"), f, errors)
+      + field("pickup_cap", t("zip"), f, errors, { required: false, col: "col-3" }) + field("pickup_citta", t("city"), f, errors)
       + field("pickup_provincia", t("region"), f, errors, { required: false, col: "col-3" }))}
     ${section(3, t("destination"), field("dest_nome", t("recipient_name"), f, errors, { col: "col-12", hint: t("recipient_hint") })
       + field("dest_indirizzo", t("street"), f, errors, { col: "col-12" })
-      + field("dest_cap", t("zip"), f, errors, { col: "col-3" }) + field("dest_citta", t("city"), f, errors)
+      + field("dest_cap", t("zip"), f, errors, { required: false, col: "col-3" }) + field("dest_citta", t("city"), f, errors)
       + field("dest_provincia", t("region"), f, errors, { required: false, col: "col-3" })
-      + field("dest_ref_nome", t("recipient_contact"), f, errors) + field("dest_ref_telefono", t("recipient_phone"), f, errors, { type: "tel" }))}
+      + field("dest_ref_nome", t("recipient_contact"), f, errors, { required: false }) + field("dest_ref_telefono", t("recipient_phone"), f, errors, { type: "tel", required: false }))}
     ${section(4, t("what_we_carry"), `<div class="field col-6"><label>${esc(t("type"))} <span class="req">*</span></label><div class="segmented">
         <label><input type="radio" name="tipo" value="busta" ${f.tipo === "busta" ? "checked" : ""}><span>✉ ${esc(t("type_busta"))}</span></label>
         <label><input type="radio" name="tipo" value="pacco" ${f.tipo !== "busta" ? "checked" : ""}><span>📦 ${esc(t("type_pacco"))}</span></label></div></div>`
@@ -536,7 +540,7 @@ function viewNew(_, __, f, errors = {}) {
     e.preventDefault();
     const d = formData(e.target);
     const err = {};
-    require(d, byAdmin ? SHIP_REQUIRED.filter((k) => k !== "mitt_email") : SHIP_REQUIRED, err);
+    require(d, SHIP_REQUIRED, err);
     if (d.mitt_email && !EMAIL_RE.test(d.mitt_email)) err.mitt_email = t("err_email");
     for (const k of ["mitt_telefono", "dest_ref_telefono"]) if (d[k] && !PHONE_RE.test(d[k])) err[k] = t("err_phone");
     for (const k of ["pickup_cap", "dest_cap"]) if (d[k] && !ZIP_RE.test(d[k])) err[k] = t("err_zip");
@@ -642,10 +646,10 @@ function renderDetail(s, owner, confBy, delBy, createdBy) {
       <section class="card"><h2>📍 ${esc(t("pickup"))}</h2><dl class="kv">
         ${kv("when", `<strong>${itDate(s.pickup_date)} · ${esc(s.pickup_time)}</strong>`)}${kv("address", mapLink("pickup"))}
         ${s.mitt_ragione_sociale ? kv("company_name", esc(s.mitt_ragione_sociale)) : ""}
-        ${kv("contact", esc(`${s.mitt_nome} ${s.mitt_cognome}`))}${kv("phone", tel(s.mitt_telefono))}${kv("email", esc(s.mitt_email))}</dl></section>
+        ${contactName(s) ? kv("contact", esc(contactName(s))) : ""}${s.mitt_telefono ? kv("phone", tel(s.mitt_telefono)) : ""}${s.mitt_email ? kv("email", esc(s.mitt_email)) : ""}</dl></section>
       <section class="card"><h2>🏁 ${esc(t("destination"))}</h2><dl class="kv">
         ${kv("recipient", `<strong>${esc(s.dest_nome)}</strong>`)}${kv("address", mapLink("dest"))}
-        ${kv("contact", esc(s.dest_ref_nome))}${kv("phone", tel(s.dest_ref_telefono))}</dl></section>
+        ${s.dest_ref_nome ? kv("contact", esc(s.dest_ref_nome)) : ""}${s.dest_ref_telefono ? kv("phone", tel(s.dest_ref_telefono)) : ""}</dl></section>
       <section class="card"><h2>📦 ${esc(t("details"))}</h2><dl class="kv">
         ${kv("type", esc(t("type_" + s.tipo)))}${kv("parcels", esc(s.colli))}
         ${s.peso ? kv("weight", esc(s.peso)) : ""}${s.note ? kv("notes", esc(s.note)) : ""}
@@ -735,9 +739,10 @@ async function viewLabel(code) {
     <div class="label-body"><div class="label-qr">${svg}<div class="scan-hint">${esc(t("scan_hint"))}</div></div>
     <div class="label-info">
       <div class="label-to"><h3>${esc(t("destination"))}</h3><div class="big">${esc(s.dest_nome)}</div><div>${esc(addr("dest", s))}</div>
-        <div>${esc(t("contact"))}: ${esc(s.dest_ref_nome)} · ☎ <span class="ltr">${esc(s.dest_ref_telefono)}</span></div></div>
-      <div><h3>${esc(t("sender"))} / ${esc(t("pickup"))}</h3><div><strong>${esc(s.mitt_ragione_sociale || `${s.mitt_nome} ${s.mitt_cognome}`)}</strong></div>
-        <div>${esc(addr("pickup", s))}</div><div>${esc(t("contact"))}: ${esc(`${s.mitt_nome} ${s.mitt_cognome}`)} · ☎ <span class="ltr">${esc(s.mitt_telefono)}</span></div>
+        ${s.dest_ref_nome || s.dest_ref_telefono ? `<div>${s.dest_ref_nome ? `${esc(t("contact"))}: ${esc(s.dest_ref_nome)}` : ""}${s.dest_ref_nome && s.dest_ref_telefono ? " · " : ""}${s.dest_ref_telefono ? `☎ <span class="ltr">${esc(s.dest_ref_telefono)}</span>` : ""}</div>` : ""}</div>
+      <div><h3>${esc(t("sender"))} / ${esc(t("pickup"))}</h3><div><strong>${esc(senderName(s))}</strong></div>
+        <div>${esc(addr("pickup", s))}</div>
+        ${contactName(s) || s.mitt_telefono ? `<div>${contactName(s) ? `${esc(t("contact"))}: ${esc(contactName(s))}` : ""}${contactName(s) && s.mitt_telefono ? " · " : ""}${s.mitt_telefono ? `☎ <span class="ltr">${esc(s.mitt_telefono)}</span>` : ""}</div>` : ""}
         <div>${esc(t("pickup"))}: ${itDate(s.pickup_date)} ${esc(s.pickup_time)}</div></div>
       <div><h3>${esc(t("details"))}</h3><div>${esc(t("type_" + s.tipo))} · ${esc(t("parcels"))}: ${esc(s.colli)}${s.peso ? ` · ${esc(t("weight"))}: ${esc(s.peso)}` : ""}</div>
         ${s.note ? `<div>${esc(t("notes"))}: ${esc(s.note)}</div>` : ""}</div>
@@ -783,7 +788,7 @@ function viewAdmin(_, params) {
       + STATUS.map((st) => `<a href="${adminLink({ stato: st })}" class="${status === st ? "active" : ""}">${esc(t("status_" + st))}<span class="count">${counts[st]}</span></a>`).join("");
     let rows = all.filter((s) => !STATUS.includes(status) || s.status === status);
     const q = q0.toLowerCase();
-    if (q) rows = rows.filter((s) => ["code", "mitt_ragione_sociale", "mitt_cognome", "dest_nome", "dest_citta"].some((f) => (s[f] || "").toLowerCase().includes(q)));
+    if (q) rows = rows.filter((s) => ["code", "mitt_ragione_sociale", "mitt_nome", "mitt_cognome", "dest_nome", "dest_citta"].some((f) => (s[f] || "").toLowerCase().includes(q)));
     if (sortKey === "consegna") {
       // per consegna: prima le spedizioni consegnate in ordine di data e ora, poi le altre (per ritiro)
       const done = rows.filter((s) => s.delivered_at).sort((a, b) => a.delivered_at.localeCompare(b.delivered_at));
@@ -798,7 +803,7 @@ function viewAdmin(_, params) {
       <th>${esc(t("destination"))}</th><th>${esc(t("delivery"))}</th><th>${esc(t("status"))}</th></tr></thead><tbody>${rows.map((s) => `
       <tr class="rowlink" data-href="#/spedizione/${esc(s.code)}"><td class="code">${esc(s.code)}</td>
       <td><strong>${itDate(s.pickup_date)} ${esc(s.pickup_time)}</strong><br><span class="muted small">${esc(s.pickup_citta)}</span></td>
-      <td>${esc(s.mitt_ragione_sociale || `${s.mitt_nome} ${s.mitt_cognome}`)}<br><span class="muted small ltr">${esc(s.mitt_telefono)}</span></td>
+      <td>${esc(senderName(s))}<br><span class="muted small ltr">${esc(s.mitt_telefono || "")}</span></td>
       <td>${esc(s.dest_nome)}<br><span class="muted small">${esc(s.dest_citta)}</span></td>
       <td>${s.delivered_at ? `<strong>${itDate(s.delivered_at)} ${hm(s.delivered_at)}</strong>` : '<span class="muted">—</span>'}</td><td>${badge(s.status)}</td></tr>`).join("")}</tbody></table></div>`
       : `<div class="empty">${esc(t("no_results"))}</div>`;
@@ -859,7 +864,7 @@ function viewCourier() {
         <div class="route-num">${i + 1}</div>
         <a class="route-body" href="#/spedizione/${esc(s.code)}">
           <div class="page-head" style="margin-bottom:6px"><span class="code">${esc(s.code)}</span><span class="badge badge-confermata">${esc(t("pickup"))} ${itDate(s.pickup_date)} ${esc(s.pickup_time)}</span></div>
-          <div class="small"><strong>${esc(t("pickup"))}:</strong> ${esc(s.mitt_ragione_sociale || `${s.mitt_nome} ${s.mitt_cognome}`)} — ${esc(addr("pickup", s))}</div>
+          <div class="small"><strong>${esc(t("pickup"))}:</strong> ${esc(senderName(s))} — ${esc(addr("pickup", s))}</div>
           <div class="small"><strong>${esc(t("destination"))}:</strong> ${esc(s.dest_nome)} — ${esc(addr("dest", s))}</div></a>
         <div class="route-moves">
           <button class="btn btn-ghost move" data-i="${i}" data-d="-1" ${i === 0 ? "disabled" : ""} aria-label="${esc(t("move_up"))}" title="${esc(t("move_up"))}">↑</button>

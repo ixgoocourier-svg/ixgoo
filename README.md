@@ -11,7 +11,8 @@ spagnolo, tedesco, russo e cinese.
 1. Il cliente si registra (serve solo email e password; nome, cognome, ragione sociale, telefono e
    indirizzo sono facoltativi) e
    conferma l'email con il link che Firebase gli invia.
-2. Prenota: mittente, data/ora e luogo di ritiro, destinatario con referente e telefono, busta o pacco.
+2. Prenota: obbligatori solo data, ora e indirizzo di ritiro, destinatario e indirizzo di consegna;
+   dati del mittente, CAP e referente alla consegna sono facoltativi. Busta o pacco.
 3. L'admin vede l'ordine in "Ordini" e preme **Conferma ricevimento ordine**.
    L'admin può anche inserire direttamente un ordine per un cliente non registrato (menu
    **Nuova spedizione**): nasce già confermato, con l'etichetta QR subito stampabile.
