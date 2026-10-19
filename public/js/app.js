@@ -80,7 +80,8 @@ const go = (hash) => { location.hash = hash; };
 // nome da mostrare: nome e cognome se ci sono, altrimenti l'email
 const personLabel = (u) => [u.nome, u.cognome].filter(Boolean).join(" ") || u.email || "—";
 // tutte le liste di ordini: per data e ora di ritiro, dalla più vicina alla più lontana
-const byPickup = (a, b) => `${a.pickup_date} ${a.pickup_time}`.localeCompare(`${b.pickup_date} ${b.pickup_time}`);
+const pickupKey = (s) => `${s.pickup_date || "9999-99-99"} ${s.pickup_time || "99:99"}`;
+const byPickup = (a, b) => pickupKey(a).localeCompare(pickupKey(b));
 const flash = (msg, cat = "success") => { pendingFlash = { msg, cat }; };
 
 function formData(form) {
@@ -221,7 +222,7 @@ function beep() {
 
 function newOrderAlert(s) {
   const href = `#/spedizione/${encodeURIComponent(s.code)}`;
-  const body = `${s.code} · ${itDate(s.pickup_date)} ${s.pickup_time} · ${s.pickup_citta} → ${s.dest_citta}`;
+  const body = `${s.code} · ${itDate(s.pickup_date) || "—"} ${s.pickup_time || ""} · ${s.pickup_citta || "—"} → ${s.dest_citta || "—"}`;
   beep();
   let box = document.getElementById("toasts");
   if (!box) { box = document.createElement("div"); box.id = "toasts"; document.body.appendChild(box); }
@@ -479,12 +480,11 @@ const SHIP_FIELDS = ["mitt_ragione_sociale", "mitt_nome", "mitt_cognome", "mitt_
   "pickup_date", "pickup_time", "pickup_indirizzo", "pickup_cap", "pickup_citta", "pickup_provincia",
   "dest_nome", "dest_indirizzo", "dest_cap", "dest_citta", "dest_provincia", "dest_ref_nome",
   "dest_ref_telefono", "tipo", "colli", "peso", "note"];
-// obbligatori solo i dati senza cui il corriere non può lavorare: quando/dove ritirare e dove consegnare
-const SHIP_REQUIRED = ["pickup_date", "pickup_time", "pickup_indirizzo", "pickup_citta",
-  "dest_nome", "dest_indirizzo", "dest_citta", "tipo"];
+// nessun campo obbligatorio: il cliente inserisce i dati che vuole (tipo e colli hanno un valore predefinito)
+const SHIP_REQUIRED = [];
 
 function notifyAdmins(s) {
-  const message = `${s.code}\n${itDate(s.pickup_date)} ${s.pickup_time} · ${s.pickup_citta} → ${s.dest_citta}\n`
+  const message = `${s.code}\n${itDate(s.pickup_date) || "—"} ${s.pickup_time || ""} · ${s.pickup_citta || "—"} → ${s.dest_citta || "—"}\n`
     + `${TR.el["type_" + s.tipo]} / ${TR.it["type_" + s.tipo]} × ${s.colli}`;
   // invio "a fondo perduto": se ntfy non risponde la prenotazione resta comunque salvata
   fetch("https://ntfy.sh/", {
@@ -519,20 +519,20 @@ function viewNew(_, __, f, errors = {}) {
     ${section(1, t("sender"), field("mitt_ragione_sociale", t("company_name"), f, errors, { required: false, col: "col-12" })
       + field("mitt_nome", t("contact_first_name"), f, errors, { required: false }) + field("mitt_cognome", t("contact_last_name"), f, errors, { required: false })
       + field("mitt_telefono", t("phone"), f, errors, { type: "tel", required: false }) + field("mitt_email", t("email"), f, errors, { type: "email", required: false }))}
-    ${section(2, t("pickup"), field("pickup_date", t("pickup_date"), f, errors, { type: "date", attrs: `min="${todayIso()}"` })
-      + field("pickup_time", t("pickup_time"), f, errors, { type: "time" })
-      + field("pickup_indirizzo", t("pickup_address"), f, errors, { col: "col-12" })
-      + field("pickup_cap", t("zip"), f, errors, { required: false, col: "col-3" }) + field("pickup_citta", t("city"), f, errors)
+    ${section(2, t("pickup"), field("pickup_date", t("pickup_date"), f, errors, { required: false, type: "date", attrs: `min="${todayIso()}"` })
+      + field("pickup_time", t("pickup_time"), f, errors, { required: false, type: "time" })
+      + field("pickup_indirizzo", t("pickup_address"), f, errors, { required: false, col: "col-12" })
+      + field("pickup_cap", t("zip"), f, errors, { required: false, col: "col-3" }) + field("pickup_citta", t("city"), f, errors, { required: false })
       + field("pickup_provincia", t("region"), f, errors, { required: false, col: "col-3" }))}
-    ${section(3, t("destination"), field("dest_nome", t("recipient_name"), f, errors, { col: "col-12", hint: t("recipient_hint") })
-      + field("dest_indirizzo", t("street"), f, errors, { col: "col-12" })
-      + field("dest_cap", t("zip"), f, errors, { required: false, col: "col-3" }) + field("dest_citta", t("city"), f, errors)
+    ${section(3, t("destination"), field("dest_nome", t("recipient_name"), f, errors, { required: false, col: "col-12", hint: t("recipient_hint") })
+      + field("dest_indirizzo", t("street"), f, errors, { required: false, col: "col-12" })
+      + field("dest_cap", t("zip"), f, errors, { required: false, col: "col-3" }) + field("dest_citta", t("city"), f, errors, { required: false })
       + field("dest_provincia", t("region"), f, errors, { required: false, col: "col-3" })
       + field("dest_ref_nome", t("recipient_contact"), f, errors, { required: false }) + field("dest_ref_telefono", t("recipient_phone"), f, errors, { type: "tel", required: false }))}
-    ${section(4, t("what_we_carry"), `<div class="field col-6"><label>${esc(t("type"))} <span class="req">*</span></label><div class="segmented">
+    ${section(4, t("what_we_carry"), `<div class="field col-6"><label>${esc(t("type"))}</label><div class="segmented">
         <label><input type="radio" name="tipo" value="busta" ${f.tipo === "busta" ? "checked" : ""}><span>✉ ${esc(t("type_busta"))}</span></label>
         <label><input type="radio" name="tipo" value="pacco" ${f.tipo !== "busta" ? "checked" : ""}><span>📦 ${esc(t("type_pacco"))}</span></label></div></div>`
-      + field("colli", t("parcels"), f, errors, { type: "number", col: "col-3", attrs: 'min="1" max="99"' })
+      + field("colli", t("parcels"), f, errors, { required: false, type: "number", col: "col-3", attrs: 'min="1" max="99"' })
       + field("peso", t("weight"), f, errors, { required: false, col: "col-3" })
       + field("note", t("notes"), f, errors, { type: "textarea", required: false, col: "col-12", hint: t("notes_hint") }))}
     <button class="btn btn-primary btn-lg btn-block" type="submit">${esc(t("submit_booking"))}</button></form></div>`, t("nav_new_shipment"));

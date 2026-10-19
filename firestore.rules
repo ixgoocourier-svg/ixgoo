@@ -69,10 +69,7 @@ service cloud.firestore {
           && request.resource.data.delivered_at == null
           && request.resource.data.tipo in ['busta', 'pacco']
           && request.resource.data.colli is int
-          && request.resource.data.colli >= 1 && request.resource.data.colli <= 99
-          && nonEmpty(request.resource.data.dest_nome)
-          && nonEmpty(request.resource.data.pickup_date)
-          && nonEmpty(request.resource.data.pickup_time);
+          && request.resource.data.colli >= 1 && request.resource.data.colli <= 99;
       }
 
       allow create: if validShipment(code) && (
