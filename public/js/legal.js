@@ -5,8 +5,8 @@
 // Dati del titolare del trattamento: completare qui.
 export const CONTROLLER = {
   name: "Iosif Xanthakis", // titolare / ragione sociale
-  address: "",   // indirizzo della sede
-  vat: "",       // ΑΦΜ / partita IVA
+  address: "Trifillias 4A, Athens, Greece", // indirizzo della sede
+  vat: "132511610", // ΑΦΜ / partita IVA
   email: "",     // email per richieste privacy
   phone: "",     // facoltativo
 };
