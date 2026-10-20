@@ -75,6 +75,8 @@ const addr = (p, s) => [s[p + "_indirizzo"], [s[p + "_cap"], s[p + "_citta"]].fi
 const senderName = (s) => s.mitt_ragione_sociale || [s.mitt_nome, s.mitt_cognome].filter(Boolean).join(" ") || "—";
 const contactName = (s) => [s.mitt_nome, s.mitt_cognome].filter(Boolean).join(" ");
 const badge = (st) => `<span class="badge badge-${st}">${esc(t("status_" + st))}</span>`;
+// email confermata dal link, oppure utente approvato da un admin
+const isVerified = () => !!state.user && (state.user.emailVerified || (state.profile && state.profile.approved === true));
 const isStaff = () => state.profile && ["admin", "corriere"].includes(state.profile.role);
 const role = () => (state.profile ? state.profile.role : null);
 const go = (hash) => { location.hash = hash; };
@@ -120,7 +122,7 @@ function renderHeader() {
   const path = location.hash.split("?")[0];
   const link = (href, key, count) => `<a href="${href}" class="${path === href ? "active" : ""}">${esc(t(key))}${count ? ` <span class="nav-badge">${count}</span>` : ""}</a>`;
   let nav = "";
-  if (state.user && state.user.emailVerified && state.profile) {
+  if (isVerified() && state.profile) {
     if (r === "cliente") nav += link("#/area-cliente", "nav_my_shipments") + link("#/nuova", "nav_new_shipment");
     else if (r === "admin") nav += link("#/admin", "nav_orders", state.pending) + link("#/nuova", "nav_new_shipment") + link("#/corriere", "nav_deliveries") + link("#/utenti", "nav_users");
     else if (r === "corriere") nav += link("#/corriere", "nav_deliveries");
@@ -178,7 +180,7 @@ function errorView(code) {
 
 function homeFor() {
   if (!state.user) return "#/";
-  if (!state.user.emailVerified) return "#/verifica";
+  if (!isVerified()) return "#/verifica";
   return { admin: "#/admin", corriere: "#/corriere" }[role()] || "#/area-cliente";
 }
 
@@ -275,7 +277,7 @@ function route() {
       flash(t("flash_login_needed"), "info");
       return go(`#/accedi?next=${encodeURIComponent("#/" + path + (qs ? "?" + qs : ""))}`);
     }
-    if (!state.user.emailVerified) return go("#/verifica");
+    if (!isVerified()) return go("#/verifica");
     if (!state.profile || state.profile.active === false) return errorView(403);
     if (guards[name].length && !guards[name].includes(role())) return errorView(403);
   }
@@ -320,9 +322,12 @@ onAuthStateChanged(auth, (user) => {
     state.profile = snap.exists() ? snap.data() : null;
     state.profileLoaded = true;
     state.ready = true;
-    const isAdminNow = state.user && state.user.emailVerified && state.profile
+    const isAdminNow = isVerified() && state.profile
       && state.profile.role === "admin" && state.profile.active !== false;
     if (isAdminNow) startAdminWatch(); else stopAdminWatch();
+    if (state.user && state.user.emailVerified && state.profile && state.profile.email_verified !== true) {
+      updateDoc(doc(db, "users", state.user.uid), { email_verified: true }).catch(() => {});
+    }
     // al primo caricamento, o se cambia ruolo/stato, ridisegna la pagina (non mentre si compila un modulo)
     if (!wasLoaded || !document.querySelector("#main form")) route();
   }, () => { state.profileLoaded = true; state.ready = true; route(); });
@@ -412,7 +417,7 @@ function viewRegister(_, __, f = {}, errors = {}) {
 }
 
 function viewLogin(_, params) {
-  if (state.user && state.user.emailVerified) return go(homeFor());
+  if (isVerified()) return go(homeFor());
   render(`<div class="narrow"><h1>${esc(t("login_title"))}</h1><form class="card" id="login"><div class="grid">
     <div class="field col-12"><label for="email">${esc(t("email"))}</label><input id="email" name="email" type="email" required autocomplete="username"></div>
     <div class="field col-12"><label for="password">${esc(t("password"))}</label><input id="password" name="password" type="password" required autocomplete="current-password"></div>
@@ -425,7 +430,6 @@ function viewLogin(_, params) {
     busy(e.target, true);
     try {
       const cred = await signInWithEmailAndPassword(auth, d.email.toLowerCase(), d.password);
-      if (!cred.user.emailVerified) return go("#/verifica");
       const nxt = params.get("next");
       go(nxt && nxt.startsWith("#/") ? nxt : "#/");
     } catch (ex) {
@@ -452,7 +456,7 @@ function viewForgot() {
 
 function viewVerify() {
   if (!state.user) return go("#/accedi");
-  if (state.user.emailVerified) return go(homeFor());
+  if (isVerified()) return go(homeFor());
   render(`<div class="narrow card" style="text-align:center"><div style="font-size:48px">✉️</div>
     <h1>${esc(t("check_email_title"))}</h1><p>${esc(t("check_email_text", { email: state.user.email }))}</p>
     <div class="actions" style="justify-content:center"><button class="btn btn-primary" id="done">${esc(t("verified_continue"))}</button></div>
@@ -986,18 +990,31 @@ function viewUsers() {
     const users = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
       .sort((a, b) => (a.role === b.role ? (b.created_at || "").localeCompare(a.created_at || "") : ["admin", "corriere", "cliente"].indexOf(a.role) - ["admin", "corriere", "cliente"].indexOf(b.role)));
     const el = document.getElementById("list");
-    el.innerHTML = `<div class="table-wrap"><table><thead><tr><th>${esc(t("customer"))}</th><th>${esc(t("contact"))}</th><th>${esc(t("role"))}</th><th>${esc(t("status"))}</th></tr></thead><tbody>
+    el.innerHTML = `<div class="table-wrap"><table><thead><tr><th>${esc(t("customer"))}</th><th>${esc(t("contact"))}</th><th>${esc(t("email_status"))}</th><th>${esc(t("role"))}</th><th>${esc(t("status"))}</th></tr></thead><tbody>
       ${users.map((u) => {
+        // email confermata dal link, approvato dall'admin, oppure pulsante per approvare
+        const emailCell = u.email_verified ? `<span class="badge badge-consegnata">${esc(t("email_ok_badge"))}</span>`
+          : u.approved ? `<span class="badge badge-confermata">${esc(t("approved_badge"))}</span>`
+          : `<span class="badge badge-in_attesa">${esc(t("email_unconfirmed"))}</span>${self ? "" : `<br><button class="btn btn-ok small approve" style="margin-top:6px" data-uid="${esc(u.id)}" data-email="${esc(u.email)}">${esc(t("approve_user"))}</button>`}`;
         const self = u.id === state.user.uid;
         const roleSel = self ? esc(t("role_" + u.role)) : `<select data-uid="${esc(u.id)}" class="role-sel">${["cliente", "corriere", "admin"].map((r) => `<option value="${r}" ${u.role === r ? "selected" : ""}>${esc(t("role_" + r))}</option>`).join("")}</select>`;
         const act = self ? `<span class="badge badge-consegnata">${esc(t("active"))}</span>`
           : `<button class="btn ${u.active !== false ? "btn-danger" : "btn-ghost"} small toggle" data-uid="${esc(u.id)}" data-active="${u.active !== false}">${esc(u.active !== false ? t("disable") : t("enable"))}</button>`;
         return `<tr><td><strong>${esc(u.ragione_sociale || "—")}</strong></td>
           <td>${esc(personLabel(u))}<br><span class="muted small">${esc(u.email)} · <span class="ltr">${esc(u.telefono || "")}</span></span></td>
-          <td>${roleSel}</td><td>${act}</td></tr>`;
+          <td>${emailCell}</td><td>${roleSel}</td><td>${act}</td></tr>`;
       }).join("")}</tbody></table></div>`;
     el.querySelectorAll(".role-sel").forEach((sel) => {
       sel.onchange = () => updateDoc(doc(db, "users", sel.dataset.uid), { role: sel.value }).catch(() => { flash(t("err_generic"), "error"); route(); });
+    });
+    el.querySelectorAll(".approve").forEach((b) => {
+      b.onclick = () => {
+        if (!confirm(t("confirm_approve", { email: b.dataset.email }))) return;
+        b.disabled = true;
+        updateDoc(doc(db, "users", b.dataset.uid), { approved: true, approved_by: state.user.uid, approved_at: nowStr() })
+          .then(() => { flash(t("flash_user_approved", { email: b.dataset.email })); route(); })
+          .catch(() => { flash(t("err_generic"), "error"); route(); });
+      };
     });
     el.querySelectorAll(".toggle").forEach((b) => {
       b.onclick = () => updateDoc(doc(db, "users", b.dataset.uid), { active: b.dataset.active !== "true" }).catch(() => { flash(t("err_generic"), "error"); route(); });

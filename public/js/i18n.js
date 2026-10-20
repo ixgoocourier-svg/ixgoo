@@ -234,7 +234,13 @@ export const TR = {
   "filter_all_dates": "Όλες οι ημερομηνίες",
   "date_filter_hint": "Φιλτράρισμα κατά ημερομηνία παραλαβής",
   "recent_recipients": "📇 Παραλήπτες που έχετε ήδη χρησιμοποιήσει",
-  "recent_pick": "— Επιλέξτε για αυτόματη συμπλήρωση —"
+  "recent_pick": "— Επιλέξτε για αυτόματη συμπλήρωση —",
+  "approve_user": "✓ Επιβεβαίωση χρήστη",
+  "approved_badge": "Επιβεβαιώθηκε από διαχειριστή",
+  "email_ok_badge": "Email επιβεβαιωμένο",
+  "confirm_approve": "Να επιβεβαιωθεί ο χρήστης {email} χωρίς επαλήθευση του email;",
+  "flash_user_approved": "Ο χρήστης {email} επιβεβαιώθηκε.",
+  "email_status": "Email"
  },
  "en": {
   "app_title": "Shipment booking",
@@ -467,7 +473,13 @@ export const TR = {
   "filter_all_dates": "All dates",
   "date_filter_hint": "Filter by pickup date",
   "recent_recipients": "📇 Recipients you've used before",
-  "recent_pick": "— Choose to fill in automatically —"
+  "recent_pick": "— Choose to fill in automatically —",
+  "approve_user": "✓ Confirm user",
+  "approved_badge": "Confirmed by admin",
+  "email_ok_badge": "Email confirmed",
+  "confirm_approve": "Confirm {email} without email verification?",
+  "flash_user_approved": "User {email} confirmed.",
+  "email_status": "Email"
  },
  "it": {
   "app_title": "Prenotazione spedizioni",
@@ -700,7 +712,13 @@ export const TR = {
   "filter_all_dates": "Tutte le date",
   "date_filter_hint": "Filtra per data di ritiro",
   "recent_recipients": "📇 Destinatari già usati",
-  "recent_pick": "— Scegli per compilare in automatico —"
+  "recent_pick": "— Scegli per compilare in automatico —",
+  "approve_user": "✓ Conferma utente",
+  "approved_badge": "Confermato dall'admin",
+  "email_ok_badge": "Email confermata",
+  "confirm_approve": "Confermare l'utente {email} senza la verifica dell'email?",
+  "flash_user_approved": "Utente {email} confermato.",
+  "email_status": "Email"
  },
  "fr": {
   "app_title": "Réservation d'envois",
@@ -933,7 +951,13 @@ export const TR = {
   "filter_all_dates": "Toutes les dates",
   "date_filter_hint": "Filtrer par date d'enlèvement",
   "recent_recipients": "📇 Destinataires déjà utilisés",
-  "recent_pick": "— Choisir pour remplir automatiquement —"
+  "recent_pick": "— Choisir pour remplir automatiquement —",
+  "approve_user": "✓ Confirmer l'utilisateur",
+  "approved_badge": "Confirmé par l'admin",
+  "email_ok_badge": "E-mail confirmé",
+  "confirm_approve": "Confirmer {email} sans vérification de l'e-mail ?",
+  "flash_user_approved": "Utilisateur {email} confirmé.",
+  "email_status": "E-mail"
  },
  "he": {
   "app_title": "הזמנת משלוחים",
@@ -1166,7 +1190,13 @@ export const TR = {
   "filter_all_dates": "כל התאריכים",
   "date_filter_hint": "סינון לפי תאריך איסוף",
   "recent_recipients": "📇 נמענים ששימשו בעבר",
-  "recent_pick": "— בחרו למילוי אוטומטי —"
+  "recent_pick": "— בחרו למילוי אוטומטי —",
+  "approve_user": "✓ אישור משתמש",
+  "approved_badge": "אושר על ידי מנהל",
+  "email_ok_badge": "אימייל אושר",
+  "confirm_approve": "לאשר את {email} ללא אימות אימייל?",
+  "flash_user_approved": "המשתמש {email} אושר.",
+  "email_status": "אימייל"
  },
  "es": {
   "app_title": "Reserva de envíos",
@@ -1399,7 +1429,13 @@ export const TR = {
   "filter_all_dates": "Todas las fechas",
   "date_filter_hint": "Filtrar por fecha de recogida",
   "recent_recipients": "📇 Destinatarios ya usados",
-  "recent_pick": "— Elige para rellenar automáticamente —"
+  "recent_pick": "— Elige para rellenar automáticamente —",
+  "approve_user": "✓ Confirmar usuario",
+  "approved_badge": "Confirmado por el admin",
+  "email_ok_badge": "Correo confirmado",
+  "confirm_approve": "¿Confirmar a {email} sin verificar el correo?",
+  "flash_user_approved": "Usuario {email} confirmado.",
+  "email_status": "Correo"
  },
  "de": {
   "app_title": "Sendungsbuchung",
@@ -1632,7 +1668,13 @@ export const TR = {
   "filter_all_dates": "Alle Daten",
   "date_filter_hint": "Nach Abholdatum filtern",
   "recent_recipients": "📇 Bereits verwendete Empfänger",
-  "recent_pick": "— Auswählen zum automatischen Ausfüllen —"
+  "recent_pick": "— Auswählen zum automatischen Ausfüllen —",
+  "approve_user": "✓ Benutzer bestätigen",
+  "approved_badge": "Vom Admin bestätigt",
+  "email_ok_badge": "E-Mail bestätigt",
+  "confirm_approve": "{email} ohne E-Mail-Bestätigung freischalten?",
+  "flash_user_approved": "Benutzer {email} bestätigt.",
+  "email_status": "E-Mail"
  },
  "ru": {
   "app_title": "Бронирование отправлений",
@@ -1865,7 +1907,13 @@ export const TR = {
   "filter_all_dates": "Все даты",
   "date_filter_hint": "Фильтр по дате забора",
   "recent_recipients": "📇 Ранее использованные получатели",
-  "recent_pick": "— Выберите для автозаполнения —"
+  "recent_pick": "— Выберите для автозаполнения —",
+  "approve_user": "✓ Подтвердить пользователя",
+  "approved_badge": "Подтверждён администратором",
+  "email_ok_badge": "Email подтверждён",
+  "confirm_approve": "Подтвердить {email} без проверки email?",
+  "flash_user_approved": "Пользователь {email} подтверждён.",
+  "email_status": "Email"
  },
  "zh": {
   "app_title": "快递预约",
@@ -2098,6 +2146,12 @@ export const TR = {
   "filter_all_dates": "全部日期",
   "date_filter_hint": "按取件日期筛选",
   "recent_recipients": "📇 已用过的收件人",
-  "recent_pick": "— 选择以自动填写 —"
+  "recent_pick": "— 选择以自动填写 —",
+  "approve_user": "✓ 确认用户",
+  "approved_badge": "已由管理员确认",
+  "email_ok_badge": "邮箱已确认",
+  "confirm_approve": "在未验证邮箱的情况下确认 {email}？",
+  "flash_user_approved": "用户 {email} 已确认。",
+  "email_status": "邮箱"
  }
 };

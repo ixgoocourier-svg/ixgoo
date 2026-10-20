@@ -8,7 +8,12 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     function signedIn() { return request.auth != null; }
-    function verified() { return signedIn() && request.auth.token.email_verified == true; }
+    // "verificato": email confermata dal link, oppure utente approvato da un admin (campo approved)
+    function verified() {
+      return signedIn() && (request.auth.token.email_verified == true
+        || (exists(/databases/$(database)/documents/users/$(request.auth.uid))
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('approved', false) == true));
+    }
     function profilePath() { return /databases/$(database)/documents/users/$(request.auth.uid); }
     function profile() { return get(profilePath()).data; }
     function hasRole(roles) {
@@ -33,16 +38,22 @@ service cloud.firestore {
                 && request.auth.token.email in ['ixgoo@outlook.com.gr', 'pierpaolomurgioni@gmail.com',
                                                 'ixgoocourier@gmail.com']))
         && request.resource.data.active == true
-        && request.resource.data.email == request.auth.token.email;
+        && request.resource.data.email == request.auth.token.email
+        // nessuno si approva da solo, né dichiara l'email confermata se non lo è
+        && request.resource.data.get('approved', false) == false
+        && (request.resource.data.get('email_verified', false) == false || request.auth.token.email_verified == true);
 
       allow update: if signedIn() && (
         // il proprio profilo, senza toccare ruolo, stato o email
+        // (email_verified si può segnare solo se Firebase conferma davvero l'email)
         (request.auth.uid == uid && onlyChanged(['ragione_sociale', 'nome', 'cognome',
-            'indirizzo', 'cap', 'citta', 'provincia', 'telefono', 'lang']))
-        // un admin cambia ruolo o attiva/disattiva gli altri
-        || (isAdmin() && request.auth.uid != uid && onlyChanged(['role', 'active'])
+            'indirizzo', 'cap', 'citta', 'provincia', 'telefono', 'lang', 'email_verified'])
+            && (request.resource.data.get('email_verified', false) == false || request.auth.token.email_verified == true))
+        // un admin cambia ruolo, attiva/disattiva o approva gli altri
+        || (isAdmin() && request.auth.uid != uid && onlyChanged(['role', 'active', 'approved', 'approved_by', 'approved_at'])
             && request.resource.data.role in ['cliente', 'corriere', 'admin']
-            && request.resource.data.active is bool)
+            && request.resource.data.active is bool
+            && request.resource.data.get('approved', false) is bool)
       );
 
       // diritto alla cancellazione: ognuno può eliminare solo il proprio profilo
