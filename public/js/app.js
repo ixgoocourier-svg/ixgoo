@@ -865,12 +865,19 @@ function viewAdmin(_, params) {
   const q0 = params.get("q") || "";
   const sortKey = params.get("ordina") === "consegna" ? "consegna" : "ritiro";
   const desc = params.get("dir") === "desc";
+  // filtro per data di ritiro (se manca: giorno di creazione); un solo giorno se c'è solo "dal"
+  const isDate = (x) => /^\d{4}-\d{2}-\d{2}$/.test(x || "");
+  const from = isDate(params.get("da")) ? params.get("da") : "";
+  const to = isDate(params.get("a")) ? params.get("a") : from;
   // ricostruisce il link della pagina cambiando solo alcuni parametri
   const adminLink = (changes) => {
-    const p = new URLSearchParams({ stato: status, q: q0, ordina: sortKey, dir: desc ? "desc" : "asc", ...changes });
-    if (!p.get("q")) p.delete("q");
+    const p = new URLSearchParams({ stato: status, q: q0, ordina: sortKey, dir: desc ? "desc" : "asc", da: from, a: to, ...changes });
+    for (const k of ["q", "da", "a"]) if (!p.get(k)) p.delete(k);
     return `#/admin?${p}`;
   };
+  const daysAgo = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return nowStr(d).slice(0, 10); };
+  const quick = [["filter_today", todayIso(), todayIso()], ["filter_yesterday", daysAgo(1), daysAgo(1)],
+    ["filter_7d", daysAgo(6), todayIso()], ["filter_30d", daysAgo(29), todayIso()], ["filter_all_dates", "", ""]];
   const askNotif = "Notification" in window && Notification.permission === "default";
   render(`<div class="page-head"><h1>${esc(t("nav_orders"))}</h1>
     ${askNotif ? `<button class="btn btn-ghost small" id="notif">${esc(t("enable_notifications"))}</button>` : ""}</div><div class="tabs" id="tabs"></div>
@@ -880,6 +887,11 @@ function viewAdmin(_, params) {
     <select id="sortkey" class="sort-select"><option value="ritiro" ${sortKey === "ritiro" ? "selected" : ""}>${esc(t("sort_pickup"))}</option>
     <option value="consegna" ${sortKey === "consegna" ? "selected" : ""}>${esc(t("sort_delivery"))}</option></select>
     <a class="btn btn-ghost small" href="${adminLink({ dir: desc ? "asc" : "desc" })}">${esc(t(desc ? "sort_desc" : "sort_asc"))}</a></div>
+    <form class="search date-filter" id="dates" title="${esc(t("date_filter_hint"))}">
+      <label class="small muted">📅 ${esc(t("date_from"))} <input type="date" name="da" value="${from}"></label>
+      <label class="small muted">${esc(t("date_to"))} <input type="date" name="a" value="${from && to !== from ? to : ""}"></label>
+      <div class="date-quick">${quick.map(([k, a, b]) => `<a class="btn btn-ghost small ${from === a && to === b ? "active" : ""}" href="${adminLink({ da: a, a: b })}">${esc(t(k))}</a>`).join("")}</div>
+    </form>
     <div class="card" style="padding:8px 0" id="list"><div class="empty">${esc(t("loading"))}</div></div>`, t("nav_orders"));
   document.getElementById("search").onsubmit = (e) => {
     e.preventDefault();
@@ -888,9 +900,16 @@ function viewAdmin(_, params) {
   const nb = document.getElementById("notif");
   if (nb) nb.onclick = () => { Notification.requestPermission().then(() => { beep(); route(); }); };
   document.getElementById("sortkey").onchange = (e) => go(adminLink({ ordina: e.target.value }));
+  const dates = document.getElementById("dates");
+  dates.onchange = () => {
+    const v = formData(dates);
+    go(adminLink({ da: v.da || "", a: v.da ? (v.a && v.a >= v.da ? v.a : v.da) : "" }));
+  };
+  dates.onsubmit = (e) => e.preventDefault();
   unsubs.push(onSnapshot(collection(db, "shipments"), (snap) => {
     allowed();
-    const all = snap.docs.map((d) => d.data());
+    const dayOf = (s) => s.pickup_date || (s.created_at || "").slice(0, 10);
+    const all = snap.docs.map((d) => d.data()).filter((s) => !from || (dayOf(s) >= from && dayOf(s) <= to));
     const counts = Object.fromEntries(STATUS.map((st) => [st, all.filter((s) => s.status === st).length]));
     document.getElementById("tabs").innerHTML = `<a href="${adminLink({ stato: "tutte" })}" class="${STATUS.includes(status) ? "" : "active"}">${esc(t("all"))}<span class="count">${all.length}</span></a>`
       + STATUS.map((st) => `<a href="${adminLink({ stato: st })}" class="${status === st ? "active" : ""}">${esc(t("status_" + st))}<span class="count">${counts[st]}</span></a>`).join("");

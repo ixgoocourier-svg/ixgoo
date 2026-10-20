@@ -224,7 +224,15 @@ export const TR = {
   "confirm_delete_account": "Οριστική διαγραφή του λογαριασμού;",
   "flash_account_deleted": "Ο λογαριασμός διαγράφηκε.",
   "swap_addresses": "⇅ Αντιστροφή παραλαβής και παράδοσης",
-  "swap_hint": "Αν θέλετε να παραλάβουμε από άλλη διεύθυνση και να παραδώσουμε σε εσάς, πατήστε εδώ: τα στοιχεία σας θα μεταφερθούν στον προορισμό."
+  "swap_hint": "Αν θέλετε να παραλάβουμε από άλλη διεύθυνση και να παραδώσουμε σε εσάς, πατήστε εδώ: τα στοιχεία σας θα μεταφερθούν στον προορισμό.",
+  "date_from": "Από",
+  "date_to": "Έως",
+  "filter_today": "Σήμερα",
+  "filter_yesterday": "Χθες",
+  "filter_7d": "Τελευταίες 7 ημέρες",
+  "filter_30d": "Τελευταίες 30 ημέρες",
+  "filter_all_dates": "Όλες οι ημερομηνίες",
+  "date_filter_hint": "Φιλτράρισμα κατά ημερομηνία παραλαβής"
  },
  "en": {
   "app_title": "Shipment booking",
@@ -447,7 +455,15 @@ export const TR = {
   "confirm_delete_account": "Permanently delete your account?",
   "flash_account_deleted": "Your account has been deleted.",
   "swap_addresses": "⇅ Swap pickup and delivery",
-  "swap_hint": "If we should pick up elsewhere and deliver to you, tap here: your details move to the destination."
+  "swap_hint": "If we should pick up elsewhere and deliver to you, tap here: your details move to the destination.",
+  "date_from": "From",
+  "date_to": "To",
+  "filter_today": "Today",
+  "filter_yesterday": "Yesterday",
+  "filter_7d": "Last 7 days",
+  "filter_30d": "Last 30 days",
+  "filter_all_dates": "All dates",
+  "date_filter_hint": "Filter by pickup date"
  },
  "it": {
   "app_title": "Prenotazione spedizioni",
@@ -670,7 +686,15 @@ export const TR = {
   "confirm_delete_account": "Eliminare definitivamente l'account?",
   "flash_account_deleted": "Il tuo account è stato eliminato.",
   "swap_addresses": "⇅ Inverti ritiro e consegna",
-  "swap_hint": "Se dobbiamo ritirare da un altro indirizzo e consegnare a te, tocca qui: i tuoi dati passano nella destinazione."
+  "swap_hint": "Se dobbiamo ritirare da un altro indirizzo e consegnare a te, tocca qui: i tuoi dati passano nella destinazione.",
+  "date_from": "Dal",
+  "date_to": "Al",
+  "filter_today": "Oggi",
+  "filter_yesterday": "Ieri",
+  "filter_7d": "Ultimi 7 giorni",
+  "filter_30d": "Ultimi 30 giorni",
+  "filter_all_dates": "Tutte le date",
+  "date_filter_hint": "Filtra per data di ritiro"
  },
  "fr": {
   "app_title": "Réservation d'envois",
@@ -893,7 +917,15 @@ export const TR = {
   "confirm_delete_account": "Supprimer définitivement votre compte ?",
   "flash_account_deleted": "Votre compte a été supprimé.",
   "swap_addresses": "⇅ Inverser enlèvement et livraison",
-  "swap_hint": "Si nous devons enlever ailleurs et vous livrer, touchez ici : vos coordonnées passent dans la destination."
+  "swap_hint": "Si nous devons enlever ailleurs et vous livrer, touchez ici : vos coordonnées passent dans la destination.",
+  "date_from": "Du",
+  "date_to": "Au",
+  "filter_today": "Aujourd'hui",
+  "filter_yesterday": "Hier",
+  "filter_7d": "7 derniers jours",
+  "filter_30d": "30 derniers jours",
+  "filter_all_dates": "Toutes les dates",
+  "date_filter_hint": "Filtrer par date d'enlèvement"
  },
  "he": {
   "app_title": "הזמנת משלוחים",
@@ -1116,7 +1148,15 @@ export const TR = {
   "confirm_delete_account": "למחוק את החשבון לצמיתות?",
   "flash_account_deleted": "החשבון נמחק.",
   "swap_addresses": "⇅ החלפת איסוף ומסירה",
-  "swap_hint": "אם עלינו לאסוף מכתובת אחרת ולמסור לכם, הקישו כאן: הפרטים שלכם יעברו ליעד."
+  "swap_hint": "אם עלינו לאסוף מכתובת אחרת ולמסור לכם, הקישו כאן: הפרטים שלכם יעברו ליעד.",
+  "date_from": "מתאריך",
+  "date_to": "עד תאריך",
+  "filter_today": "היום",
+  "filter_yesterday": "אתמול",
+  "filter_7d": "7 הימים האחרונים",
+  "filter_30d": "30 הימים האחרונים",
+  "filter_all_dates": "כל התאריכים",
+  "date_filter_hint": "סינון לפי תאריך איסוף"
  },
  "es": {
   "app_title": "Reserva de envíos",
@@ -1339,7 +1379,15 @@ export const TR = {
   "confirm_delete_account": "¿Eliminar definitivamente tu cuenta?",
   "flash_account_deleted": "Tu cuenta ha sido eliminada.",
   "swap_addresses": "⇅ Intercambiar recogida y entrega",
-  "swap_hint": "Si debemos recoger en otra dirección y entregarte a ti, toca aquí: tus datos pasan al destino."
+  "swap_hint": "Si debemos recoger en otra dirección y entregarte a ti, toca aquí: tus datos pasan al destino.",
+  "date_from": "Desde",
+  "date_to": "Hasta",
+  "filter_today": "Hoy",
+  "filter_yesterday": "Ayer",
+  "filter_7d": "Últimos 7 días",
+  "filter_30d": "Últimos 30 días",
+  "filter_all_dates": "Todas las fechas",
+  "date_filter_hint": "Filtrar por fecha de recogida"
  },
  "de": {
   "app_title": "Sendungsbuchung",
@@ -1562,7 +1610,15 @@ export const TR = {
   "confirm_delete_account": "Konto endgültig löschen?",
   "flash_account_deleted": "Ihr Konto wurde gelöscht.",
   "swap_addresses": "⇅ Abholung und Zustellung tauschen",
-  "swap_hint": "Wenn wir woanders abholen und an Sie zustellen sollen, tippen Sie hier: Ihre Daten wandern ins Ziel."
+  "swap_hint": "Wenn wir woanders abholen und an Sie zustellen sollen, tippen Sie hier: Ihre Daten wandern ins Ziel.",
+  "date_from": "Von",
+  "date_to": "Bis",
+  "filter_today": "Heute",
+  "filter_yesterday": "Gestern",
+  "filter_7d": "Letzte 7 Tage",
+  "filter_30d": "Letzte 30 Tage",
+  "filter_all_dates": "Alle Daten",
+  "date_filter_hint": "Nach Abholdatum filtern"
  },
  "ru": {
   "app_title": "Бронирование отправлений",
@@ -1785,7 +1841,15 @@ export const TR = {
   "confirm_delete_account": "Удалить аккаунт навсегда?",
   "flash_account_deleted": "Аккаунт удалён.",
   "swap_addresses": "⇅ Поменять забор и доставку",
-  "swap_hint": "Если нужно забрать по другому адресу и доставить вам, нажмите здесь: ваши данные перейдут в назначение."
+  "swap_hint": "Если нужно забрать по другому адресу и доставить вам, нажмите здесь: ваши данные перейдут в назначение.",
+  "date_from": "С",
+  "date_to": "По",
+  "filter_today": "Сегодня",
+  "filter_yesterday": "Вчера",
+  "filter_7d": "Последние 7 дней",
+  "filter_30d": "Последние 30 дней",
+  "filter_all_dates": "Все даты",
+  "date_filter_hint": "Фильтр по дате забора"
  },
  "zh": {
   "app_title": "快递预约",
@@ -2008,6 +2072,14 @@ export const TR = {
   "confirm_delete_account": "确定永久删除账户？",
   "flash_account_deleted": "您的账户已删除。",
   "swap_addresses": "⇅ 互换取件与送达",
-  "swap_hint": "如需从其他地址取件并送到您处，请点此：您的信息将移至目的地。"
+  "swap_hint": "如需从其他地址取件并送到您处，请点此：您的信息将移至目的地。",
+  "date_from": "从",
+  "date_to": "至",
+  "filter_today": "今天",
+  "filter_yesterday": "昨天",
+  "filter_7d": "最近 7 天",
+  "filter_30d": "最近 30 天",
+  "filter_all_dates": "全部日期",
+  "date_filter_hint": "按取件日期筛选"
  }
 };

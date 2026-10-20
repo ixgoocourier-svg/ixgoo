@@ -296,3 +296,10 @@ footer a { color: var(--muted); }
 .swap-row { text-align: center; margin: -6px 0 20px; }
 .swap-row .btn { border-color: var(--gold); font-size: 1rem; }
 .swap-row .small { margin-top: 6px; }
+
+/* filtro per data nella pagina Ordini */
+.date-filter { align-items: center; flex-wrap: wrap; }
+.date-filter label { display: flex; align-items: center; gap: 6px; }
+.date-filter input[type=date] { padding: 8px 10px; border: 1px solid #d6d1c5; border-radius: 9px; font: inherit; }
+.date-quick { display: flex; gap: 6px; flex-wrap: wrap; }
+.date-quick .btn.active { background: var(--black); color: #fff; border-color: var(--black); }
