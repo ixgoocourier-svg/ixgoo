@@ -232,7 +232,9 @@ export const TR = {
   "filter_7d": "Τελευταίες 7 ημέρες",
   "filter_30d": "Τελευταίες 30 ημέρες",
   "filter_all_dates": "Όλες οι ημερομηνίες",
-  "date_filter_hint": "Φιλτράρισμα κατά ημερομηνία παραλαβής"
+  "date_filter_hint": "Φιλτράρισμα κατά ημερομηνία παραλαβής",
+  "recent_recipients": "📇 Παραλήπτες που έχετε ήδη χρησιμοποιήσει",
+  "recent_pick": "— Επιλέξτε για αυτόματη συμπλήρωση —"
  },
  "en": {
   "app_title": "Shipment booking",
@@ -463,7 +465,9 @@ export const TR = {
   "filter_7d": "Last 7 days",
   "filter_30d": "Last 30 days",
   "filter_all_dates": "All dates",
-  "date_filter_hint": "Filter by pickup date"
+  "date_filter_hint": "Filter by pickup date",
+  "recent_recipients": "📇 Recipients you've used before",
+  "recent_pick": "— Choose to fill in automatically —"
  },
  "it": {
   "app_title": "Prenotazione spedizioni",
@@ -694,7 +698,9 @@ export const TR = {
   "filter_7d": "Ultimi 7 giorni",
   "filter_30d": "Ultimi 30 giorni",
   "filter_all_dates": "Tutte le date",
-  "date_filter_hint": "Filtra per data di ritiro"
+  "date_filter_hint": "Filtra per data di ritiro",
+  "recent_recipients": "📇 Destinatari già usati",
+  "recent_pick": "— Scegli per compilare in automatico —"
  },
  "fr": {
   "app_title": "Réservation d'envois",
@@ -925,7 +931,9 @@ export const TR = {
   "filter_7d": "7 derniers jours",
   "filter_30d": "30 derniers jours",
   "filter_all_dates": "Toutes les dates",
-  "date_filter_hint": "Filtrer par date d'enlèvement"
+  "date_filter_hint": "Filtrer par date d'enlèvement",
+  "recent_recipients": "📇 Destinataires déjà utilisés",
+  "recent_pick": "— Choisir pour remplir automatiquement —"
  },
  "he": {
   "app_title": "הזמנת משלוחים",
@@ -1156,7 +1164,9 @@ export const TR = {
   "filter_7d": "7 הימים האחרונים",
   "filter_30d": "30 הימים האחרונים",
   "filter_all_dates": "כל התאריכים",
-  "date_filter_hint": "סינון לפי תאריך איסוף"
+  "date_filter_hint": "סינון לפי תאריך איסוף",
+  "recent_recipients": "📇 נמענים ששימשו בעבר",
+  "recent_pick": "— בחרו למילוי אוטומטי —"
  },
  "es": {
   "app_title": "Reserva de envíos",
@@ -1387,7 +1397,9 @@ export const TR = {
   "filter_7d": "Últimos 7 días",
   "filter_30d": "Últimos 30 días",
   "filter_all_dates": "Todas las fechas",
-  "date_filter_hint": "Filtrar por fecha de recogida"
+  "date_filter_hint": "Filtrar por fecha de recogida",
+  "recent_recipients": "📇 Destinatarios ya usados",
+  "recent_pick": "— Elige para rellenar automáticamente —"
  },
  "de": {
   "app_title": "Sendungsbuchung",
@@ -1618,7 +1630,9 @@ export const TR = {
   "filter_7d": "Letzte 7 Tage",
   "filter_30d": "Letzte 30 Tage",
   "filter_all_dates": "Alle Daten",
-  "date_filter_hint": "Nach Abholdatum filtern"
+  "date_filter_hint": "Nach Abholdatum filtern",
+  "recent_recipients": "📇 Bereits verwendete Empfänger",
+  "recent_pick": "— Auswählen zum automatischen Ausfüllen —"
  },
  "ru": {
   "app_title": "Бронирование отправлений",
@@ -1849,7 +1863,9 @@ export const TR = {
   "filter_7d": "Последние 7 дней",
   "filter_30d": "Последние 30 дней",
   "filter_all_dates": "Все даты",
-  "date_filter_hint": "Фильтр по дате забора"
+  "date_filter_hint": "Фильтр по дате забора",
+  "recent_recipients": "📇 Ранее использованные получатели",
+  "recent_pick": "— Выберите для автозаполнения —"
  },
  "zh": {
   "app_title": "快递预约",
@@ -2080,6 +2096,8 @@ export const TR = {
   "filter_7d": "最近 7 天",
   "filter_30d": "最近 30 天",
   "filter_all_dates": "全部日期",
-  "date_filter_hint": "按取件日期筛选"
+  "date_filter_hint": "按取件日期筛选",
+  "recent_recipients": "📇 已用过的收件人",
+  "recent_pick": "— 选择以自动填写 —"
  }
 };

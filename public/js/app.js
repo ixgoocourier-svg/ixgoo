@@ -577,6 +577,38 @@ function swapPickupAndDestination(form) {
   if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
+// Rubrica automatica dei destinatari: presi dagli ordini precedenti (del cliente, o di tutti per l'admin),
+// senza doppioni, dal più recente. Scegliendone uno si compilano i campi della destinazione.
+const DEST_KEYS = ["dest_nome", "dest_indirizzo", "dest_cap", "dest_citta", "dest_provincia", "dest_ref_nome", "dest_ref_telefono"];
+async function loadRecentRecipients(form) {
+  let docs;
+  try {
+    const q = role() === "admin" ? collection(db, "shipments")
+      : query(collection(db, "shipments"), where("user_id", "==", state.user.uid));
+    docs = (await getDocs(q)).docs.map((d) => d.data());
+  } catch (e) { return; }
+  const seen = new Set();
+  const list = [];
+  for (const s of docs.sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""))) {
+    if (!s.dest_nome && !s.dest_indirizzo) continue;
+    const key = [s.dest_nome, s.dest_indirizzo, s.dest_citta].map((x) => (x || "").trim().toLowerCase()).join("|");
+    if (seen.has(key)) continue;
+    seen.add(key);
+    list.push(s);
+    if (list.length >= 100) break;
+  }
+  const box = document.getElementById("recent-box");
+  const sel = document.getElementById("recent-dest");
+  if (!list.length || !box || !sel || !document.body.contains(form)) return;
+  sel.insertAdjacentHTML("beforeend", list.map((s, i) => `<option value="${i}">${esc([s.dest_nome, addr("dest", s)].filter(Boolean).join(" · "))}</option>`).join(""));
+  box.hidden = false;
+  sel.onchange = () => {
+    const s = list[Number(sel.value)];
+    if (!s) return;
+    for (const k of DEST_KEYS) if (form.elements[k]) form.elements[k].value = s[k] || "";
+  };
+}
+
 function viewNew(_, __, f, errors = {}, edit = null) {
   const u = state.profile;
   // l'admin inserisce ordini per clienti non registrati: modulo vuoto, email facoltativa
@@ -604,7 +636,9 @@ function viewNew(_, __, f, errors = {}, edit = null) {
       + field("pickup_provincia", t("region"), f, errors, { required: false, col: "col-3" }))}
     <div class="swap-row"><button type="button" class="btn btn-ghost" id="swap">${esc(t("swap_addresses"))}</button>
       <div class="small muted">${esc(t("swap_hint"))}</div></div>
-    ${section(3, t("destination"), field("dest_nome", t("recipient_name"), f, errors, { required: false, col: "col-12", hint: t("recipient_hint") })
+    ${section(3, t("destination"), `<div class="field col-12 recent-box" id="recent-box" hidden><label for="recent-dest">${esc(t("recent_recipients"))}</label>
+        <select id="recent-dest" class="sort-select"><option value="">${esc(t("recent_pick"))}</option></select></div>`
+      + field("dest_nome", t("recipient_name"), f, errors, { required: false, col: "col-12", hint: t("recipient_hint") })
       + field("dest_indirizzo", t("street"), f, errors, { required: false, col: "col-12" })
       + field("dest_cap", t("zip"), f, errors, { required: false, col: "col-3" }) + field("dest_citta", t("city"), f, errors, { required: false })
       + field("dest_provincia", t("region"), f, errors, { required: false, col: "col-3" })
@@ -619,6 +653,7 @@ function viewNew(_, __, f, errors = {}, edit = null) {
     ${edit ? `<p style="text-align:center"><a href="#/spedizione/${esc(edit.code)}">← ${esc(edit.code)}</a></p>` : ""}</form></div>`,
   edit ? t("edit_title", { code: edit.code }) : t("nav_new_shipment"));
   document.getElementById("swap").onclick = () => swapPickupAndDestination(document.getElementById("ship"));
+  loadRecentRecipients(document.getElementById("ship"));
   document.getElementById("ship").onsubmit = async (e) => {
     e.preventDefault();
     const d = formData(e.target);

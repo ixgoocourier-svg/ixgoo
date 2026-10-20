@@ -303,3 +303,7 @@ footer a { color: var(--muted); }
 .date-filter input[type=date] { padding: 8px 10px; border: 1px solid #d6d1c5; border-radius: 9px; font: inherit; }
 .date-quick { display: flex; gap: 6px; flex-wrap: wrap; }
 .date-quick .btn.active { background: var(--black); color: #fff; border-color: var(--black); }
+
+/* rubrica destinatari già usati */
+.recent-box { background: var(--gold-soft); border-radius: 10px; padding: 10px 12px; }
+.recent-box select { width: 100%; }
