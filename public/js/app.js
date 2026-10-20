@@ -898,7 +898,9 @@ async function viewLabel(code) {
 function viewAdmin(_, params) {
   const status = params.get("stato") || "tutte";
   const q0 = params.get("q") || "";
-  const sortKey = params.get("ordina") === "consegna" ? "consegna" : "ritiro";
+  // ordinamento cliccando sulle intestazioni della tabella
+  const SORTS = ["codice", "ritiro", "mittente", "destinazione", "consegna", "stato"];
+  const sortKey = SORTS.includes(params.get("ordina")) ? params.get("ordina") : "ritiro";
   const desc = params.get("dir") === "desc";
   // filtro per data di ritiro (se manca: giorno di creazione); un solo giorno se c'è solo "dal"
   const isDate = (x) => /^\d{4}-\d{2}-\d{2}$/.test(x || "");
@@ -918,10 +920,6 @@ function viewAdmin(_, params) {
     ${askNotif ? `<button class="btn btn-ghost small" id="notif">${esc(t("enable_notifications"))}</button>` : ""}</div><div class="tabs" id="tabs"></div>
     <form class="search" id="search"><input name="q" value="${esc(q0)}" placeholder="${esc(t("search_placeholder"))}">
     <button class="btn btn-ghost" type="submit">${esc(t("search"))}</button></form>
-    <div class="search" style="align-items:center;flex-wrap:wrap"><label for="sortkey" class="small muted">${esc(t("sort_by"))}</label>
-    <select id="sortkey" class="sort-select"><option value="ritiro" ${sortKey === "ritiro" ? "selected" : ""}>${esc(t("sort_pickup"))}</option>
-    <option value="consegna" ${sortKey === "consegna" ? "selected" : ""}>${esc(t("sort_delivery"))}</option></select>
-    <a class="btn btn-ghost small" href="${adminLink({ dir: desc ? "asc" : "desc" })}">${esc(t(desc ? "sort_desc" : "sort_asc"))}</a></div>
     <form class="search date-filter" id="dates" title="${esc(t("date_filter_hint"))}">
       <label class="small muted">📅 ${esc(t("date_from"))} <input type="date" name="da" value="${from}"></label>
       <label class="small muted">${esc(t("date_to"))} <input type="date" name="a" value="${from && to !== from ? to : ""}"></label>
@@ -934,7 +932,6 @@ function viewAdmin(_, params) {
   };
   const nb = document.getElementById("notif");
   if (nb) nb.onclick = () => { Notification.requestPermission().then(() => { beep(); route(); }); };
-  document.getElementById("sortkey").onchange = (e) => go(adminLink({ ordina: e.target.value }));
   const dates = document.getElementById("dates");
   dates.onchange = () => {
     const v = formData(dates);
@@ -951,18 +948,26 @@ function viewAdmin(_, params) {
     let rows = all.filter((s) => !STATUS.includes(status) || s.status === status);
     const q = q0.toLowerCase();
     if (q) rows = rows.filter((s) => ["code", "mitt_ragione_sociale", "mitt_nome", "mitt_cognome", "dest_nome", "dest_citta"].some((f) => (s[f] || "").toLowerCase().includes(q)));
-    if (sortKey === "consegna") {
-      // per consegna: prima le spedizioni consegnate in ordine di data e ora, poi le altre (per ritiro)
-      const done = rows.filter((s) => s.delivered_at).sort((a, b) => a.delivered_at.localeCompare(b.delivered_at));
-      if (desc) done.reverse();
-      rows = done.concat(rows.filter((s) => !s.delivered_at).sort(byPickup));
-    } else {
-      rows.sort(byPickup);
-      if (desc) rows.reverse();
-    }
+    // valore su cui ordinare per ogni colonna; i valori vuoti finiscono sempre in fondo
+    const collator = new Intl.Collator(lang(), { sensitivity: "base", numeric: true });
+    const value = {
+      codice: (s) => s.code,
+      ritiro: (s) => (s.pickup_date ? `${s.pickup_date} ${s.pickup_time || ""}` : ""),
+      mittente: (s) => (senderName(s) === "—" ? "" : senderName(s)),
+      destinazione: (s) => s.dest_nome || s.dest_citta || "",
+      consegna: (s) => s.delivered_at || "",
+      stato: (s) => String(STATUS.indexOf(s.status)),
+    }[sortKey];
+    const withValue = rows.filter((s) => value(s));
+    // i codici hanno tutti la stessa lunghezza: basta il confronto semplice (la parte finale è esadecimale)
+    const cmp = sortKey === "codice" ? (x, y) => (x < y ? -1 : x > y ? 1 : 0) : collator.compare;
+    withValue.sort((a, b) => cmp(value(a), value(b)) || byPickup(a, b));
+    if (desc) withValue.reverse();
+    rows = withValue.concat(rows.filter((s) => !value(s)).sort(byPickup));
     const el = document.getElementById("list");
-    el.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr><th>${esc(t("code"))}</th><th>${esc(t("pickup"))}</th><th>${esc(t("sender"))}</th>
-      <th>${esc(t("destination"))}</th><th>${esc(t("delivery"))}</th><th>${esc(t("status"))}</th></tr></thead><tbody>${rows.map((s) => `
+    const th = (key, label) => `<th><a class="th-sort ${sortKey === key ? "on" : ""}" href="${adminLink({ ordina: key, dir: sortKey === key && !desc ? "desc" : "asc" })}">${esc(t(label))}<span>${sortKey === key ? (desc ? " ▼" : " ▲") : " ↕"}</span></a></th>`;
+    el.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr>${th("codice", "code")}${th("ritiro", "pickup")}${th("mittente", "sender")}
+      ${th("destinazione", "destination")}${th("consegna", "delivery")}${th("stato", "status")}</tr></thead><tbody>${rows.map((s) => `
       <tr class="rowlink" data-href="#/spedizione/${esc(s.code)}"><td class="code">${esc(s.code)}</td>
       <td><strong>${itDate(s.pickup_date)} ${esc(s.pickup_time)}</strong><br><span class="muted small">${esc(s.pickup_citta)}</span></td>
       <td>${esc(senderName(s))}<br><span class="muted small ltr">${esc(s.mitt_telefono || "")}</span></td>

@@ -1,6 +1,6 @@
 # IxGoo Courier & Logistics — prenotazione spedizioni
 
-**Online:** https://ixgoo.web.app
+**Online:** https://ixgoo-courier.web.app (il vecchio ixgoo.web.app rimanda qui)
 
 App statica, gratuita (piano Firebase Spark): Firebase Authentication + Firestore + Firebase Hosting.
 Lingua principale greco; anche inglese, italiano, francese, ebraico (da destra a sinistra),
