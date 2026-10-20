@@ -547,6 +547,36 @@ function canEdit(s) {
   return role() === "admin" || (role() === "cliente" && s.user_id === state.user.uid);
 }
 
+// Scambia mittente/ritiro con destinazione nel modulo: per chi vuole che ritiriamo altrove
+// e consegniamo a sé. Ripremendo si torna indietro (l'email del mittente non ha un corrispettivo).
+function swapPickupAndDestination(form) {
+  const v = formData(form);
+  const get = (k) => v[k] || "";
+  const senderFull = [get("mitt_nome"), get("mitt_cognome")].filter(Boolean).join(" ");
+  const next = {
+    // il mittente diventa il destinatario
+    dest_nome: get("mitt_ragione_sociale") || senderFull,
+    dest_ref_nome: senderFull,
+    dest_ref_telefono: get("mitt_telefono"),
+    // il destinatario diventa il mittente
+    mitt_ragione_sociale: get("dest_nome") && get("dest_nome") !== get("dest_ref_nome") ? get("dest_nome") : "",
+    mitt_nome: get("dest_ref_nome") || get("dest_nome"),
+    mitt_cognome: "",
+    mitt_telefono: get("dest_ref_telefono"),
+    mitt_email: "",
+  };
+  for (const part of ["indirizzo", "cap", "citta", "provincia"]) {
+    next[`pickup_${part}`] = get(`dest_${part}`);
+    next[`dest_${part}`] = get(`pickup_${part}`);
+  }
+  for (const [k, val] of Object.entries(next)) {
+    const el = form.elements[k];
+    if (el) el.value = val;
+  }
+  const first = form.elements.mitt_ragione_sociale;
+  if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
 function viewNew(_, __, f, errors = {}, edit = null) {
   const u = state.profile;
   // l'admin inserisce ordini per clienti non registrati: modulo vuoto, email facoltativa
@@ -572,6 +602,8 @@ function viewNew(_, __, f, errors = {}, edit = null) {
       + field("pickup_indirizzo", t("pickup_address"), f, errors, { required: false, col: "col-12" })
       + field("pickup_cap", t("zip"), f, errors, { required: false, col: "col-3" }) + field("pickup_citta", t("city"), f, errors, { required: false })
       + field("pickup_provincia", t("region"), f, errors, { required: false, col: "col-3" }))}
+    <div class="swap-row"><button type="button" class="btn btn-ghost" id="swap">${esc(t("swap_addresses"))}</button>
+      <div class="small muted">${esc(t("swap_hint"))}</div></div>
     ${section(3, t("destination"), field("dest_nome", t("recipient_name"), f, errors, { required: false, col: "col-12", hint: t("recipient_hint") })
       + field("dest_indirizzo", t("street"), f, errors, { required: false, col: "col-12" })
       + field("dest_cap", t("zip"), f, errors, { required: false, col: "col-3" }) + field("dest_citta", t("city"), f, errors, { required: false })
@@ -586,6 +618,7 @@ function viewNew(_, __, f, errors = {}, edit = null) {
     <button class="btn btn-primary btn-lg btn-block" type="submit">${esc(t(edit ? "save_changes" : "submit_booking"))}</button>
     ${edit ? `<p style="text-align:center"><a href="#/spedizione/${esc(edit.code)}">← ${esc(edit.code)}</a></p>` : ""}</form></div>`,
   edit ? t("edit_title", { code: edit.code }) : t("nav_new_shipment"));
+  document.getElementById("swap").onclick = () => swapPickupAndDestination(document.getElementById("ship"));
   document.getElementById("ship").onsubmit = async (e) => {
     e.preventDefault();
     const d = formData(e.target);

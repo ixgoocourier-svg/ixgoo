@@ -222,7 +222,9 @@ export const TR = {
   "delete_account": "Διαγραφή λογαριασμού",
   "delete_account_note": "Για επιβεβαίωση εισάγετε τον κωδικό σας. Η διαγραφή είναι οριστική· οι αποστολές που έχουν ήδη γίνει διατηρούνται μόνο για νομικές υποχρεώσεις.",
   "confirm_delete_account": "Οριστική διαγραφή του λογαριασμού;",
-  "flash_account_deleted": "Ο λογαριασμός διαγράφηκε."
+  "flash_account_deleted": "Ο λογαριασμός διαγράφηκε.",
+  "swap_addresses": "⇅ Αντιστροφή παραλαβής και παράδοσης",
+  "swap_hint": "Αν θέλετε να παραλάβουμε από άλλη διεύθυνση και να παραδώσουμε σε εσάς, πατήστε εδώ: τα στοιχεία σας θα μεταφερθούν στον προορισμό."
  },
  "en": {
   "app_title": "Shipment booking",
@@ -443,7 +445,9 @@ export const TR = {
   "delete_account": "Delete my account",
   "delete_account_note": "Enter your password to confirm. Deletion is permanent; shipments already made are kept only for legal obligations.",
   "confirm_delete_account": "Permanently delete your account?",
-  "flash_account_deleted": "Your account has been deleted."
+  "flash_account_deleted": "Your account has been deleted.",
+  "swap_addresses": "⇅ Swap pickup and delivery",
+  "swap_hint": "If we should pick up elsewhere and deliver to you, tap here: your details move to the destination."
  },
  "it": {
   "app_title": "Prenotazione spedizioni",
@@ -664,7 +668,9 @@ export const TR = {
   "delete_account": "Elimina il mio account",
   "delete_account_note": "Inserisci la password per confermare. L'eliminazione è definitiva; le spedizioni già effettuate restano solo per obblighi di legge.",
   "confirm_delete_account": "Eliminare definitivamente l'account?",
-  "flash_account_deleted": "Il tuo account è stato eliminato."
+  "flash_account_deleted": "Il tuo account è stato eliminato.",
+  "swap_addresses": "⇅ Inverti ritiro e consegna",
+  "swap_hint": "Se dobbiamo ritirare da un altro indirizzo e consegnare a te, tocca qui: i tuoi dati passano nella destinazione."
  },
  "fr": {
   "app_title": "Réservation d'envois",
@@ -885,7 +891,9 @@ export const TR = {
   "delete_account": "Supprimer mon compte",
   "delete_account_note": "Saisissez votre mot de passe pour confirmer. La suppression est définitive ; les envois déjà effectués sont conservés uniquement pour les obligations légales.",
   "confirm_delete_account": "Supprimer définitivement votre compte ?",
-  "flash_account_deleted": "Votre compte a été supprimé."
+  "flash_account_deleted": "Votre compte a été supprimé.",
+  "swap_addresses": "⇅ Inverser enlèvement et livraison",
+  "swap_hint": "Si nous devons enlever ailleurs et vous livrer, touchez ici : vos coordonnées passent dans la destination."
  },
  "he": {
   "app_title": "הזמנת משלוחים",
@@ -1106,7 +1114,9 @@ export const TR = {
   "delete_account": "מחיקת החשבון שלי",
   "delete_account_note": "הזינו את הסיסמה לאישור. המחיקה סופית; משלוחים שבוצעו נשמרים רק לצורך חובות חוקיות.",
   "confirm_delete_account": "למחוק את החשבון לצמיתות?",
-  "flash_account_deleted": "החשבון נמחק."
+  "flash_account_deleted": "החשבון נמחק.",
+  "swap_addresses": "⇅ החלפת איסוף ומסירה",
+  "swap_hint": "אם עלינו לאסוף מכתובת אחרת ולמסור לכם, הקישו כאן: הפרטים שלכם יעברו ליעד."
  },
  "es": {
   "app_title": "Reserva de envíos",
@@ -1327,7 +1337,9 @@ export const TR = {
   "delete_account": "Eliminar mi cuenta",
   "delete_account_note": "Introduce tu contraseña para confirmar. La eliminación es definitiva; los envíos ya realizados se conservan solo por obligaciones legales.",
   "confirm_delete_account": "¿Eliminar definitivamente tu cuenta?",
-  "flash_account_deleted": "Tu cuenta ha sido eliminada."
+  "flash_account_deleted": "Tu cuenta ha sido eliminada.",
+  "swap_addresses": "⇅ Intercambiar recogida y entrega",
+  "swap_hint": "Si debemos recoger en otra dirección y entregarte a ti, toca aquí: tus datos pasan al destino."
  },
  "de": {
   "app_title": "Sendungsbuchung",
@@ -1548,7 +1560,9 @@ export const TR = {
   "delete_account": "Mein Konto löschen",
   "delete_account_note": "Geben Sie zur Bestätigung Ihr Passwort ein. Die Löschung ist endgültig; bereits durchgeführte Sendungen bleiben nur aus gesetzlichen Gründen gespeichert.",
   "confirm_delete_account": "Konto endgültig löschen?",
-  "flash_account_deleted": "Ihr Konto wurde gelöscht."
+  "flash_account_deleted": "Ihr Konto wurde gelöscht.",
+  "swap_addresses": "⇅ Abholung und Zustellung tauschen",
+  "swap_hint": "Wenn wir woanders abholen und an Sie zustellen sollen, tippen Sie hier: Ihre Daten wandern ins Ziel."
  },
  "ru": {
   "app_title": "Бронирование отправлений",
@@ -1769,7 +1783,9 @@ export const TR = {
   "delete_account": "Удалить аккаунт",
   "delete_account_note": "Введите пароль для подтверждения. Удаление необратимо; выполненные отправления хранятся только в силу требований закона.",
   "confirm_delete_account": "Удалить аккаунт навсегда?",
-  "flash_account_deleted": "Аккаунт удалён."
+  "flash_account_deleted": "Аккаунт удалён.",
+  "swap_addresses": "⇅ Поменять забор и доставку",
+  "swap_hint": "Если нужно забрать по другому адресу и доставить вам, нажмите здесь: ваши данные перейдут в назначение."
  },
  "zh": {
   "app_title": "快递预约",
@@ -1990,6 +2006,8 @@ export const TR = {
   "delete_account": "删除我的账户",
   "delete_account_note": "请输入密码确认。删除不可恢复；已完成的快递仅因法律义务而保留。",
   "confirm_delete_account": "确定永久删除账户？",
-  "flash_account_deleted": "您的账户已删除。"
+  "flash_account_deleted": "您的账户已删除。",
+  "swap_addresses": "⇅ 互换取件与送达",
+  "swap_hint": "如需从其他地址取件并送到您处，请点此：您的信息将移至目的地。"
  }
 };
