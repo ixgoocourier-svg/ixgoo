@@ -992,11 +992,11 @@ function viewUsers() {
     const el = document.getElementById("list");
     el.innerHTML = `<div class="table-wrap"><table><thead><tr><th>${esc(t("customer"))}</th><th>${esc(t("contact"))}</th><th>${esc(t("email_status"))}</th><th>${esc(t("role"))}</th><th>${esc(t("status"))}</th></tr></thead><tbody>
       ${users.map((u) => {
+        const self = u.id === state.user.uid;
         // email confermata dal link, approvato dall'admin, oppure pulsante per approvare
         const emailCell = u.email_verified ? `<span class="badge badge-consegnata">${esc(t("email_ok_badge"))}</span>`
           : u.approved ? `<span class="badge badge-confermata">${esc(t("approved_badge"))}</span>`
           : `<span class="badge badge-in_attesa">${esc(t("email_unconfirmed"))}</span>${self ? "" : `<br><button class="btn btn-ok small approve" style="margin-top:6px" data-uid="${esc(u.id)}" data-email="${esc(u.email)}">${esc(t("approve_user"))}</button>`}`;
-        const self = u.id === state.user.uid;
         const roleSel = self ? esc(t("role_" + u.role)) : `<select data-uid="${esc(u.id)}" class="role-sel">${["cliente", "corriere", "admin"].map((r) => `<option value="${r}" ${u.role === r ? "selected" : ""}>${esc(t("role_" + r))}</option>`).join("")}</select>`;
         const act = self ? `<span class="badge badge-consegnata">${esc(t("active"))}</span>`
           : `<button class="btn ${u.active !== false ? "btn-danger" : "btn-ghost"} small toggle" data-uid="${esc(u.id)}" data-active="${u.active !== false}">${esc(u.active !== false ? t("disable") : t("enable"))}</button>`;
