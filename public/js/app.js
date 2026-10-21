@@ -826,7 +826,11 @@ function renderDetail(s, owner, confBy, delBy, createdBy) {
     const d = now.slice(0, 10); const h = now.slice(11, 16);
     actions += `<div class="card deliver-box"><h2>🚚 ${esc(t("register_delivery"))}</h2><form id="deliver"><div class="grid">
       <div class="field col-6"><label for="d">${esc(t("date"))}</label><input id="d" type="date" name="data" value="${d}" max="${d}" required></div>
-      <div class="field col-6"><label for="h">${esc(t("time"))}</label><input id="h" type="time" name="ora" value="${h}" required></div></div>
+      <div class="field col-6"><label for="h">${esc(t("time"))}</label><input id="h" type="time" name="ora" value="${h}" required></div>
+      <div class="field col-12"><label for="rcv">${esc(t("received_by"))}</label><input id="rcv" name="ricevente" maxlength="100" autocomplete="off" placeholder="${esc(t("received_by_ph"))}"></div>
+      <div class="field col-12"><label>${esc(t("signature"))}</label>
+        <div class="sig-wrap"><canvas id="sig" class="sig-pad"></canvas><button type="button" id="sig-clear" class="btn btn-ghost small">${esc(t("clear_signature"))}</button></div>
+        <div class="hint">${esc(t("signature_hint"))}</div></div></div>
       <button class="btn btn-ok btn-lg btn-block" type="submit" id="deliver-btn">✓ ${esc(t("btn_delivered", { date: itDate(d), time: h }))}</button></form>
       ${r === "admin" ? `<div style="margin-top:12px">${cancelForm("acancel")}</div>` : ""}</div>`;
   }
@@ -858,6 +862,9 @@ function renderDetail(s, owner, confBy, delBy, createdBy) {
         ${s.peso ? kv("weight", esc(s.peso)) : ""}${s.note ? kv("notes", esc(s.note)) : ""}
         ${staff && owner ? kv("customer", esc(`${owner.ragione_sociale || fullName(owner)} · ${owner.email}`)) : ""}
         ${staff && !s.user_id ? kv("customer", esc(t("manual_order", { name: fullName(createdBy) || "—" }))) : ""}</dl></section>
+      ${s.status === "consegnata" && (s.received_by || s.signature) ? `<section class="card pod"><h2>${esc(t("proof_of_delivery"))}</h2>
+        ${s.received_by ? `<dl class="kv">${kv("received_by", `<strong>${esc(s.received_by)}</strong>`)}${kv("tl_delivered", `${itDate(s.delivered_at)} ${hm(s.delivered_at)}`)}</dl>` : ""}
+        ${typeof s.signature === "string" && s.signature.startsWith("data:image/png;base64,") ? `<img class="sig-img" src="${esc(s.signature)}" alt="${esc(t("signature"))}">` : ""}</section>` : ""}
       <section class="card"><h2>🕓 ${esc(t("history"))}</h2><ul class="timeline">
         <li class="done">${esc(t("tl_created"))}: ${itDate(s.created_at)} ${hm(s.created_at)}</li>
         ${s.confirmed_at ? `<li class="done">${esc(t("tl_confirmed"))}: ${itDate(s.confirmed_at)} ${hm(s.confirmed_at)}${staff && confBy ? " · " + esc(fullName(confBy)) : ""}</li>`
@@ -881,7 +888,7 @@ function renderDetail(s, owner, confBy, delBy, createdBy) {
   on("png", "onclick", () => downloadQrPng(s));
   on("undo", "onclick", () => {
     if (confirm(t("confirm_undo_delivery"))) {
-      act({ status: "confermata", delivered_at: null, delivered_by: null }, t("flash_undo_delivery", { code: s.code }));
+      act({ status: "confermata", delivered_at: null, delivered_by: null, received_by: null, signature: null }, t("flash_undo_delivery", { code: s.code }));
     }
   });
   const form = document.getElementById("deliver");
@@ -889,6 +896,8 @@ function renderDetail(s, owner, confBy, delBy, createdBy) {
     const d = document.getElementById("d"); const h = document.getElementById("h"); const b = document.getElementById("deliver-btn");
     const upd = () => { b.textContent = "✓ " + t("btn_delivered", { date: itDate(d.value), time: h.value }); };
     d.oninput = upd; h.oninput = upd;
+    const pad = signaturePad(document.getElementById("sig"));
+    document.getElementById("sig-clear").onclick = () => pad.clear();
     form.onsubmit = (e) => {
       e.preventDefault();
       const when = `${d.value} ${h.value}`;
@@ -897,11 +906,57 @@ function renderDetail(s, owner, confBy, delBy, createdBy) {
       // un pulsante grande si preme facilmente per sbaglio: chiedi conferma
       if (!confirm(t("confirm_deliver", { date: itDate(d.value), time: h.value }))) return;
       busy(form, true);
-      act({ status: "consegnata", delivered_at: `${when}:00`, delivered_by: state.user.uid },
+      act({ status: "consegnata", delivered_at: `${when}:00`, delivered_by: state.user.uid,
+        received_by: (formData(form).ricevente || "").slice(0, 100) || null, signature: pad && !pad.isEmpty() ? pad.toDataURL() : null },
         t("flash_delivered", { date: itDate(d.value), time: h.value }))
         .then(() => { if (role() === "corriere") go("#/corriere"); });
     };
   }
+}
+
+// Spazio firma con il dito (o con il mouse): restituisce isEmpty, clear e toDataURL (PNG ridotto)
+function signaturePad(canvas) {
+  const ctx = canvas.getContext("2d");
+  let drawing = false; let empty = true; let last = null;
+  const resize = () => {
+    const r = canvas.getBoundingClientRect();
+    const ratio = window.devicePixelRatio || 1;
+    canvas.width = Math.max(1, Math.round(r.width * ratio));
+    canvas.height = Math.max(1, Math.round(r.height * ratio));
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    ctx.lineWidth = 2.5; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#111";
+    empty = true;
+  };
+  resize();
+  const point = (e) => { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+  canvas.addEventListener("pointerdown", (e) => {
+    e.preventDefault(); drawing = true; last = point(e);
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* ignorato */ }
+    ctx.beginPath(); ctx.arc(last.x, last.y, 1.2, 0, Math.PI * 2); ctx.fillStyle = "#111"; ctx.fill();
+    empty = false;
+  });
+  canvas.addEventListener("pointermove", (e) => {
+    if (!drawing) return;
+    e.preventDefault();
+    const p = point(e);
+    ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+    last = p;
+  });
+  const stop = () => { drawing = false; };
+  canvas.addEventListener("pointerup", stop);
+  canvas.addEventListener("pointercancel", stop);
+  return {
+    isEmpty: () => empty,
+    clear: () => { ctx.clearRect(0, 0, canvas.width, canvas.height); empty = true; },
+    // ridotta a 600 px di larghezza: pochi KB, salvata dentro la spedizione
+    toDataURL: () => {
+      const w = Math.min(600, canvas.width);
+      const out = document.createElement("canvas");
+      out.width = w; out.height = Math.round(canvas.height * (w / canvas.width));
+      out.getContext("2d").drawImage(canvas, 0, 0, out.width, out.height);
+      return out.toDataURL("image/png");
+    },
+  };
 }
 
 // ------------------------------------------------------------------ QR ed etichetta

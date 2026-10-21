@@ -26,6 +26,14 @@ service cloud.firestore {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
     }
     function nonEmpty(v) { return v is string && v.size() > 0 && v.size() <= 300; }
+    // prova di consegna: nome di chi riceve e firma (immagine PNG piccola) facoltativi
+    function validProof() {
+      return (request.resource.data.get('received_by', null) == null
+          || (request.resource.data.received_by is string && request.resource.data.received_by.size() <= 100))
+        && (request.resource.data.get('signature', null) == null
+          || (request.resource.data.signature is string && request.resource.data.signature.size() <= 300000
+              && request.resource.data.signature.matches('data:image/png;base64,[A-Za-z0-9+/=]+')));
+    }
 
     match /users/{uid} {
       allow read: if signedIn() && (request.auth.uid == uid || isStaff());
@@ -120,14 +128,17 @@ service cloud.firestore {
         || (isStaff() && resource.data.status == 'confermata'
           && request.resource.data.status == 'consegnata'
           && request.resource.data.delivered_by == request.auth.uid
-          && onlyChanged(['status', 'delivered_at', 'delivered_by']))
+          && validProof()
+          && onlyChanged(['status', 'delivered_at', 'delivered_by', 'received_by', 'signature']))
         // consegna registrata per errore: la annulla un admin o il corriere che l'ha registrata
         || (isStaff() && resource.data.status == 'consegnata'
           && (isAdmin() || resource.data.delivered_by == request.auth.uid)
           && request.resource.data.status == 'confermata'
           && request.resource.data.delivered_at == null
           && request.resource.data.delivered_by == null
-          && onlyChanged(['status', 'delivered_at', 'delivered_by']))
+          && request.resource.data.get('received_by', null) == null
+          && request.resource.data.get('signature', null) == null
+          && onlyChanged(['status', 'delivered_at', 'delivered_by', 'received_by', 'signature']))
         // modifica dei dati dell'ordine fino alla consegna: il cliente proprietario o un admin
         || (resource.data.status in ['in_attesa', 'confermata']
           && ((verified() && resource.data.user_id == request.auth.uid) || isAdmin())

@@ -247,7 +247,13 @@ export const TR = {
   "unlink": "Χωρίς σύνδεση",
   "client_select": "👥 Πελάτης",
   "client_unregistered_new": "— Μη εγγεγραμμένος πελάτης (συμπληρώστε τα στοιχεία) —",
-  "not_registered_suffix": "μη εγγεγραμμένος"
+  "not_registered_suffix": "μη εγγεγραμμένος",
+  "received_by": "Παραλήφθηκε από",
+  "received_by_ph": "Ονοματεπώνυμο του παραλήπτη",
+  "signature": "Υπογραφή",
+  "signature_hint": "Υπογράψτε εδώ με το δάχτυλο",
+  "clear_signature": "Διαγραφή",
+  "proof_of_delivery": "✍️ Αποδεικτικό παράδοσης"
  },
  "en": {
   "app_title": "Shipment booking",
@@ -493,7 +499,13 @@ export const TR = {
   "unlink": "Don't link",
   "client_select": "👥 Customer",
   "client_unregistered_new": "— Unregistered customer (enter the details) —",
-  "not_registered_suffix": "not registered"
+  "not_registered_suffix": "not registered",
+  "received_by": "Received by",
+  "received_by_ph": "Name of the person receiving",
+  "signature": "Signature",
+  "signature_hint": "Sign here with your finger",
+  "clear_signature": "Clear",
+  "proof_of_delivery": "✍️ Proof of delivery"
  },
  "it": {
   "app_title": "Prenotazione spedizioni",
@@ -739,7 +751,13 @@ export const TR = {
   "unlink": "Non collegare",
   "client_select": "👥 Cliente",
   "client_unregistered_new": "— Cliente non registrato (inserisci i dati) —",
-  "not_registered_suffix": "non registrato"
+  "not_registered_suffix": "non registrato",
+  "received_by": "Ricevuto da",
+  "received_by_ph": "Nome di chi ritira il pacco",
+  "signature": "Firma",
+  "signature_hint": "Firma qui con il dito",
+  "clear_signature": "Cancella",
+  "proof_of_delivery": "✍️ Prova di consegna"
  },
  "fr": {
   "app_title": "Réservation d'envois",
@@ -985,7 +1003,13 @@ export const TR = {
   "unlink": "Ne pas lier",
   "client_select": "👥 Client",
   "client_unregistered_new": "— Client non inscrit (saisir les données) —",
-  "not_registered_suffix": "non inscrit"
+  "not_registered_suffix": "non inscrit",
+  "received_by": "Reçu par",
+  "received_by_ph": "Nom de la personne qui reçoit",
+  "signature": "Signature",
+  "signature_hint": "Signez ici avec le doigt",
+  "clear_signature": "Effacer",
+  "proof_of_delivery": "✍️ Preuve de livraison"
  },
  "he": {
   "app_title": "הזמנת משלוחים",
@@ -1231,7 +1255,13 @@ export const TR = {
   "unlink": "ללא קישור",
   "client_select": "👥 לקוח",
   "client_unregistered_new": "— לקוח לא רשום (הזינו את הפרטים) —",
-  "not_registered_suffix": "לא רשום"
+  "not_registered_suffix": "לא רשום",
+  "received_by": "התקבל על ידי",
+  "received_by_ph": "שם מקבל החבילה",
+  "signature": "חתימה",
+  "signature_hint": "חתמו כאן עם האצבע",
+  "clear_signature": "ניקוי",
+  "proof_of_delivery": "✍️ אישור מסירה"
  },
  "es": {
   "app_title": "Reserva de envíos",
@@ -1477,7 +1507,13 @@ export const TR = {
   "unlink": "No vincular",
   "client_select": "👥 Cliente",
   "client_unregistered_new": "— Cliente no registrado (introduce los datos) —",
-  "not_registered_suffix": "no registrado"
+  "not_registered_suffix": "no registrado",
+  "received_by": "Recibido por",
+  "received_by_ph": "Nombre de quien recibe",
+  "signature": "Firma",
+  "signature_hint": "Firma aquí con el dedo",
+  "clear_signature": "Borrar",
+  "proof_of_delivery": "✍️ Prueba de entrega"
  },
  "de": {
   "app_title": "Sendungsbuchung",
@@ -1723,7 +1759,13 @@ export const TR = {
   "unlink": "Nicht verknüpfen",
   "client_select": "👥 Kunde",
   "client_unregistered_new": "— Nicht registrierter Kunde (Daten eingeben) —",
-  "not_registered_suffix": "nicht registriert"
+  "not_registered_suffix": "nicht registriert",
+  "received_by": "Empfangen von",
+  "received_by_ph": "Name der empfangenden Person",
+  "signature": "Unterschrift",
+  "signature_hint": "Hier mit dem Finger unterschreiben",
+  "clear_signature": "Löschen",
+  "proof_of_delivery": "✍️ Zustellnachweis"
  },
  "ru": {
   "app_title": "Бронирование отправлений",
@@ -1969,7 +2011,13 @@ export const TR = {
   "unlink": "Не привязывать",
   "client_select": "👥 Клиент",
   "client_unregistered_new": "— Незарегистрированный клиент (введите данные) —",
-  "not_registered_suffix": "не зарегистрирован"
+  "not_registered_suffix": "не зарегистрирован",
+  "received_by": "Получил(а)",
+  "received_by_ph": "Имя получателя",
+  "signature": "Подпись",
+  "signature_hint": "Распишитесь здесь пальцем",
+  "clear_signature": "Очистить",
+  "proof_of_delivery": "✍️ Подтверждение доставки"
  },
  "zh": {
   "app_title": "快递预约",
@@ -2215,6 +2263,12 @@ export const TR = {
   "unlink": "不关联",
   "client_select": "👥 客户",
   "client_unregistered_new": "— 未注册客户（请填写信息）—",
-  "not_registered_suffix": "未注册"
+  "not_registered_suffix": "未注册",
+  "received_by": "签收人",
+  "received_by_ph": "签收人姓名",
+  "signature": "签名",
+  "signature_hint": "请用手指在此签名",
+  "clear_signature": "清除",
+  "proof_of_delivery": "✍️ 送达证明"
  }
 };

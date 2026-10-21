@@ -11,7 +11,7 @@ export const CONTROLLER = {
   phone: "6970616611",
   gemi: "181470203000", // numero ΓΕΜΗ
 };
-export const LAST_UPDATE = "19/10/2026";
+export const LAST_UPDATE = "21/10/2026";
 
 const missing = '<span class="todo">⚠</span>';
 const v = (x) => x || missing;
@@ -32,7 +32,7 @@ const TEXTS = {
 <ul>
 <li><strong>Account:</strong> indirizzo email e password. La password è gestita da Google Firebase in forma cifrata: noi non la vediamo.</li>
 <li><strong>Profilo (facoltativo):</strong> nome, cognome, ragione sociale, indirizzo, telefono, lingua preferita.</li>
-<li><strong>Spedizioni:</strong> dati del mittente, data, ora e luogo di ritiro, destinatario e relativo referente con telefono, tipo di invio, colli, peso, note, stato e orari di conferma e consegna.</li>
+<li><strong>Spedizioni:</strong> dati del mittente, data, ora e luogo di ritiro, destinatario e relativo referente con telefono, tipo di invio, colli, peso, note, stato e orari di conferma e consegna; alla consegna, eventualmente, il <strong>nome di chi riceve il pacco e la sua firma</strong>, visibili al cliente mittente e al nostro personale come prova di consegna.</li>
 <li><strong>Dati tecnici:</strong> dati di accesso e sicurezza registrati da Firebase (ad es. indirizzo IP, data dell'ultimo accesso).</li>
 </ul>
 <p>Se inserisci dati di altre persone (destinatari, referenti), ti impegni a informarle di questo trattamento e a farlo solo per la spedizione.</p>
@@ -125,7 +125,7 @@ const TEXTS = {
 <ul>
 <li><strong>Λογαριασμός:</strong> διεύθυνση email και κωδικός πρόσβασης. Τον κωδικό τον διαχειρίζεται η Google Firebase σε κρυπτογραφημένη μορφή· εμείς δεν τον βλέπουμε.</li>
 <li><strong>Προφίλ (προαιρετικά):</strong> όνομα, επώνυμο, επωνυμία εταιρείας, διεύθυνση, τηλέφωνο, προτιμώμενη γλώσσα.</li>
-<li><strong>Αποστολές:</strong> στοιχεία αποστολέα, ημερομηνία, ώρα και τόπος παραλαβής, παραλήπτης και υπεύθυνος με τηλέφωνο, είδος αποστολής, τεμάχια, βάρος, σημειώσεις, κατάσταση και ώρες επιβεβαίωσης και παράδοσης.</li>
+<li><strong>Αποστολές:</strong> στοιχεία αποστολέα, ημερομηνία, ώρα και τόπος παραλαβής, παραλήπτης και υπεύθυνος με τηλέφωνο, είδος αποστολής, τεμάχια, βάρος, σημειώσεις, κατάσταση και ώρες επιβεβαίωσης και παράδοσης· κατά την παράδοση, προαιρετικά, το <strong>όνομα του παραλήπτη και η υπογραφή του</strong>, ορατά στον πελάτη αποστολέα και στο προσωπικό μας ως αποδεικτικό παράδοσης.</li>
 <li><strong>Τεχνικά δεδομένα:</strong> στοιχεία πρόσβασης και ασφάλειας που καταγράφει η Firebase (π.χ. διεύθυνση IP, ημερομηνία τελευταίας σύνδεσης).</li>
 </ul>
 <p>Αν καταχωρίζετε δεδομένα άλλων προσώπων (παραληπτών, υπευθύνων), δεσμεύεστε να τους ενημερώσετε για την επεξεργασία αυτή και να το κάνετε μόνο για την αποστολή.</p>
@@ -218,7 +218,7 @@ const TEXTS = {
 <ul>
 <li><strong>Account:</strong> email address and password. The password is handled by Google Firebase in encrypted form: we never see it.</li>
 <li><strong>Profile (optional):</strong> first and last name, company name, address, phone, preferred language.</li>
-<li><strong>Shipments:</strong> sender details, pickup date, time and place, recipient and contact person with phone, type, pieces, weight, notes, status and confirmation/delivery times.</li>
+<li><strong>Shipments:</strong> sender details, pickup date, time and place, recipient and contact person with phone, type, pieces, weight, notes, status and confirmation/delivery times; on delivery, optionally, the <strong>name of the person receiving the parcel and their signature</strong>, visible to the sending customer and our staff as proof of delivery.</li>
 <li><strong>Technical data:</strong> sign-in and security data recorded by Firebase (e.g. IP address, last sign-in date).</li>
 </ul>
 <p>If you enter data about other people (recipients, contacts), you undertake to inform them of this processing and to do so only for the shipment.</p>
