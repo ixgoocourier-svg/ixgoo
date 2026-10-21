@@ -872,7 +872,8 @@ function renderDetail(s, owner, confBy, delBy, createdBy) {
         ${s.delivered_at ? `<li class="done">${esc(t("tl_delivered"))}: ${itDate(s.delivered_at)} ${hm(s.delivered_at)}${staff && delBy ? " · " + esc(fullName(delBy)) : ""}</li>`
           : s.status !== "annullata" ? `<li>${esc(t("tl_delivered"))}…</li>` : ""}
         ${s.cancelled_at ? `<li class="done">${esc(t("status_annullata"))}: ${itDate(s.cancelled_at)} ${hm(s.cancelled_at)}${s.cancel_reason ? " — " + esc(s.cancel_reason) : ""}</li>` : ""}
-      </ul></section></div>`, s.code);
+      </ul></section></div>
+    ${r === "admin" ? `<div class="danger-zone"><button class="btn btn-danger" id="delship" type="button">${esc(t("delete_shipment"))}</button></div>` : ""}`, s.code);
 
   const ref = doc(db, "shipments", s.code);
   const act = async (changes, okMsg) => {
@@ -886,6 +887,20 @@ function renderDetail(s, owner, confBy, delBy, createdBy) {
     act({ status: "annullata", cancelled_at: nowStr(), cancel_reason: formData(e.target).motivo || null }, t("flash_cancelled", { code: s.code }));
   });
   on("png", "onclick", () => downloadQrPng(s));
+  // eliminazione definitiva (solo admin, qualsiasi stato: utile per gli ordini di prova)
+  on("delship", "onclick", async () => {
+    if (!confirm(t("confirm_delete_shipment", { code: s.code }))) return;
+    unsubs.forEach((u) => u()); unsubs = [];
+    try {
+      await deleteDoc(ref);
+      flash(t("flash_shipment_deleted", { code: s.code }));
+      go("#/admin");
+    } catch (ex) {
+      console.error(ex);
+      flash(t("err_generic"), "error");
+      route();
+    }
+  });
   on("undo", "onclick", () => {
     if (confirm(t("confirm_undo_delivery"))) {
       act({ status: "confermata", delivered_at: null, delivered_by: null, received_by: null, signature: null }, t("flash_undo_delivery", { code: s.code }));

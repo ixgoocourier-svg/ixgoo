@@ -253,7 +253,10 @@ export const TR = {
   "signature": "Υπογραφή",
   "signature_hint": "Υπογράψτε εδώ με το δάχτυλο",
   "clear_signature": "Διαγραφή",
-  "proof_of_delivery": "✍️ Αποδεικτικό παράδοσης"
+  "proof_of_delivery": "✍️ Αποδεικτικό παράδοσης",
+  "delete_shipment": "🗑 Διαγραφή αποστολής",
+  "confirm_delete_shipment": "Οριστική διαγραφή της αποστολής {code}; Η ενέργεια δεν αναιρείται.",
+  "flash_shipment_deleted": "Η αποστολή {code} διαγράφηκε."
  },
  "en": {
   "app_title": "Shipment booking",
@@ -505,7 +508,10 @@ export const TR = {
   "signature": "Signature",
   "signature_hint": "Sign here with your finger",
   "clear_signature": "Clear",
-  "proof_of_delivery": "✍️ Proof of delivery"
+  "proof_of_delivery": "✍️ Proof of delivery",
+  "delete_shipment": "🗑 Delete shipment",
+  "confirm_delete_shipment": "Permanently delete shipment {code}? This cannot be undone.",
+  "flash_shipment_deleted": "Shipment {code} deleted."
  },
  "it": {
   "app_title": "Prenotazione spedizioni",
@@ -757,7 +763,10 @@ export const TR = {
   "signature": "Firma",
   "signature_hint": "Firma qui con il dito",
   "clear_signature": "Cancella",
-  "proof_of_delivery": "✍️ Prova di consegna"
+  "proof_of_delivery": "✍️ Prova di consegna",
+  "delete_shipment": "🗑 Elimina spedizione",
+  "confirm_delete_shipment": "Eliminare definitivamente la spedizione {code}? L'operazione non si può annullare.",
+  "flash_shipment_deleted": "Spedizione {code} eliminata."
  },
  "fr": {
   "app_title": "Réservation d'envois",
@@ -1009,7 +1018,10 @@ export const TR = {
   "signature": "Signature",
   "signature_hint": "Signez ici avec le doigt",
   "clear_signature": "Effacer",
-  "proof_of_delivery": "✍️ Preuve de livraison"
+  "proof_of_delivery": "✍️ Preuve de livraison",
+  "delete_shipment": "🗑 Supprimer l'envoi",
+  "confirm_delete_shipment": "Supprimer définitivement l'envoi {code} ? Action irréversible.",
+  "flash_shipment_deleted": "Envoi {code} supprimé."
  },
  "he": {
   "app_title": "הזמנת משלוחים",
@@ -1261,7 +1273,10 @@ export const TR = {
   "signature": "חתימה",
   "signature_hint": "חתמו כאן עם האצבע",
   "clear_signature": "ניקוי",
-  "proof_of_delivery": "✍️ אישור מסירה"
+  "proof_of_delivery": "✍️ אישור מסירה",
+  "delete_shipment": "🗑 מחיקת משלוח",
+  "confirm_delete_shipment": "למחוק לצמיתות את המשלוח {code}? לא ניתן לבטל פעולה זו.",
+  "flash_shipment_deleted": "המשלוח {code} נמחק."
  },
  "es": {
   "app_title": "Reserva de envíos",
@@ -1513,7 +1528,10 @@ export const TR = {
   "signature": "Firma",
   "signature_hint": "Firma aquí con el dedo",
   "clear_signature": "Borrar",
-  "proof_of_delivery": "✍️ Prueba de entrega"
+  "proof_of_delivery": "✍️ Prueba de entrega",
+  "delete_shipment": "🗑 Eliminar envío",
+  "confirm_delete_shipment": "¿Eliminar definitivamente el envío {code}? No se puede deshacer.",
+  "flash_shipment_deleted": "Envío {code} eliminado."
  },
  "de": {
   "app_title": "Sendungsbuchung",
@@ -1765,7 +1783,10 @@ export const TR = {
   "signature": "Unterschrift",
   "signature_hint": "Hier mit dem Finger unterschreiben",
   "clear_signature": "Löschen",
-  "proof_of_delivery": "✍️ Zustellnachweis"
+  "proof_of_delivery": "✍️ Zustellnachweis",
+  "delete_shipment": "🗑 Sendung löschen",
+  "confirm_delete_shipment": "Sendung {code} endgültig löschen? Dies kann nicht rückgängig gemacht werden.",
+  "flash_shipment_deleted": "Sendung {code} gelöscht."
  },
  "ru": {
   "app_title": "Бронирование отправлений",
@@ -2017,7 +2038,10 @@ export const TR = {
   "signature": "Подпись",
   "signature_hint": "Распишитесь здесь пальцем",
   "clear_signature": "Очистить",
-  "proof_of_delivery": "✍️ Подтверждение доставки"
+  "proof_of_delivery": "✍️ Подтверждение доставки",
+  "delete_shipment": "🗑 Удалить отправление",
+  "confirm_delete_shipment": "Удалить отправление {code} навсегда? Это действие необратимо.",
+  "flash_shipment_deleted": "Отправление {code} удалено."
  },
  "zh": {
   "app_title": "快递预约",
@@ -2269,6 +2293,9 @@ export const TR = {
   "signature": "签名",
   "signature_hint": "请用手指在此签名",
   "clear_signature": "清除",
-  "proof_of_delivery": "✍️ 送达证明"
+  "proof_of_delivery": "✍️ 送达证明",
+  "delete_shipment": "🗑 删除快递",
+  "confirm_delete_shipment": "确定永久删除快递 {code}？此操作无法撤销。",
+  "flash_shipment_deleted": "快递 {code} 已删除。"
  }
 };

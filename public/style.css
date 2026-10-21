@@ -322,3 +322,6 @@ footer a { color: var(--muted); }
 .sig-wrap .btn { position: absolute; top: 8px; inset-inline-end: 8px; }
 .pod .sig-img { display: block; max-width: 100%; max-height: 180px; margin-top: 10px; border: 1px solid var(--line);
   border-radius: 8px; background: #fff; }
+
+/* zona pericolosa in fondo alla scheda spedizione */
+.danger-zone { margin-top: 28px; padding-top: 18px; border-top: 1px dashed #e6b8b4; text-align: end; }

@@ -151,7 +151,8 @@ service cloud.firestore {
               'dest_nome', 'dest_indirizzo', 'dest_cap', 'dest_citta', 'dest_provincia', 'dest_ref_nome',
               'dest_ref_telefono', 'tipo', 'colli', 'peso', 'note', 'updated_at', 'updated_by']));
 
-      allow delete: if false;
+      // eliminazione definitiva: solo gli admin (es. ordini di prova), qualsiasi stato
+      allow delete: if isAdmin();
     }
   }
 }
