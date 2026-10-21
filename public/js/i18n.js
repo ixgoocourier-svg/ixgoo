@@ -244,7 +244,10 @@ export const TR = {
   "client_search": "🔎 Αναζήτηση πελάτη",
   "client_search_ph": "Όνομα, εταιρεία, email ή τηλέφωνο…",
   "client_linked": "Η παραγγελία θα εμφανίζεται και στην περιοχή του πελάτη {name}.",
-  "unlink": "Χωρίς σύνδεση"
+  "unlink": "Χωρίς σύνδεση",
+  "client_select": "👥 Πελάτης",
+  "client_unregistered_new": "— Μη εγγεγραμμένος πελάτης (συμπληρώστε τα στοιχεία) —",
+  "not_registered_suffix": "μη εγγεγραμμένος"
  },
  "en": {
   "app_title": "Shipment booking",
@@ -487,7 +490,10 @@ export const TR = {
   "client_search": "🔎 Find customer",
   "client_search_ph": "Name, company, email or phone…",
   "client_linked": "The order will also appear in {name}'s customer area.",
-  "unlink": "Don't link"
+  "unlink": "Don't link",
+  "client_select": "👥 Customer",
+  "client_unregistered_new": "— Unregistered customer (enter the details) —",
+  "not_registered_suffix": "not registered"
  },
  "it": {
   "app_title": "Prenotazione spedizioni",
@@ -730,7 +736,10 @@ export const TR = {
   "client_search": "🔎 Cerca cliente",
   "client_search_ph": "Nome, azienda, email o telefono…",
   "client_linked": "L'ordine apparirà anche nell'area del cliente {name}.",
-  "unlink": "Non collegare"
+  "unlink": "Non collegare",
+  "client_select": "👥 Cliente",
+  "client_unregistered_new": "— Cliente non registrato (inserisci i dati) —",
+  "not_registered_suffix": "non registrato"
  },
  "fr": {
   "app_title": "Réservation d'envois",
@@ -973,7 +982,10 @@ export const TR = {
   "client_search": "🔎 Rechercher un client",
   "client_search_ph": "Nom, entreprise, e-mail ou téléphone…",
   "client_linked": "La commande apparaîtra aussi dans l'espace client de {name}.",
-  "unlink": "Ne pas lier"
+  "unlink": "Ne pas lier",
+  "client_select": "👥 Client",
+  "client_unregistered_new": "— Client non inscrit (saisir les données) —",
+  "not_registered_suffix": "non inscrit"
  },
  "he": {
   "app_title": "הזמנת משלוחים",
@@ -1216,7 +1228,10 @@ export const TR = {
   "client_search": "🔎 חיפוש לקוח",
   "client_search_ph": "שם, חברה, אימייל או טלפון…",
   "client_linked": "ההזמנה תופיע גם באזור הלקוח של {name}.",
-  "unlink": "ללא קישור"
+  "unlink": "ללא קישור",
+  "client_select": "👥 לקוח",
+  "client_unregistered_new": "— לקוח לא רשום (הזינו את הפרטים) —",
+  "not_registered_suffix": "לא רשום"
  },
  "es": {
   "app_title": "Reserva de envíos",
@@ -1459,7 +1474,10 @@ export const TR = {
   "client_search": "🔎 Buscar cliente",
   "client_search_ph": "Nombre, empresa, correo o teléfono…",
   "client_linked": "El pedido aparecerá también en el área del cliente {name}.",
-  "unlink": "No vincular"
+  "unlink": "No vincular",
+  "client_select": "👥 Cliente",
+  "client_unregistered_new": "— Cliente no registrado (introduce los datos) —",
+  "not_registered_suffix": "no registrado"
  },
  "de": {
   "app_title": "Sendungsbuchung",
@@ -1702,7 +1720,10 @@ export const TR = {
   "client_search": "🔎 Kunde suchen",
   "client_search_ph": "Name, Firma, E-Mail oder Telefon…",
   "client_linked": "Der Auftrag erscheint auch im Kundenbereich von {name}.",
-  "unlink": "Nicht verknüpfen"
+  "unlink": "Nicht verknüpfen",
+  "client_select": "👥 Kunde",
+  "client_unregistered_new": "— Nicht registrierter Kunde (Daten eingeben) —",
+  "not_registered_suffix": "nicht registriert"
  },
  "ru": {
   "app_title": "Бронирование отправлений",
@@ -1945,7 +1966,10 @@ export const TR = {
   "client_search": "🔎 Найти клиента",
   "client_search_ph": "Имя, компания, email или телефон…",
   "client_linked": "Заказ также появится в кабинете клиента {name}.",
-  "unlink": "Не привязывать"
+  "unlink": "Не привязывать",
+  "client_select": "👥 Клиент",
+  "client_unregistered_new": "— Незарегистрированный клиент (введите данные) —",
+  "not_registered_suffix": "не зарегистрирован"
  },
  "zh": {
   "app_title": "快递预约",
@@ -2188,6 +2212,9 @@ export const TR = {
   "client_search": "🔎 查找客户",
   "client_search_ph": "姓名、公司、邮箱或电话…",
   "client_linked": "该订单也会显示在客户 {name} 的页面中。",
-  "unlink": "不关联"
+  "unlink": "不关联",
+  "client_select": "👥 客户",
+  "client_unregistered_new": "— 未注册客户（请填写信息）—",
+  "not_registered_suffix": "未注册"
  }
 };

@@ -613,8 +613,11 @@ async function loadRecentRecipients(form) {
   };
 }
 
-// Ricerca cliente per l'admin: clienti registrati (l'ordine si collega al loro account) e mittenti
-// degli ordini già inseriti a mano. Scegliendone uno si compilano mittente e indirizzo di ritiro.
+// Menu clienti per l'admin: clienti registrati (l'ordine si collega al loro account) e clienti non
+// registrati già serviti con ordini inseriti a mano, tutti in ordine alfabetico. Scegliendone uno si
+// compilano mittente e indirizzo di ritiro; la prima voce lascia inserire a mano un cliente nuovo.
+const SENDER_KEYS = ["mitt_ragione_sociale", "mitt_nome", "mitt_cognome", "mitt_telefono", "mitt_email",
+  "pickup_indirizzo", "pickup_cap", "pickup_citta", "pickup_provincia"];
 async function loadClientDirectory(form) {
   const entries = [];
   try {
@@ -622,46 +625,48 @@ async function loadClientDirectory(form) {
     for (const d of clients.docs) {
       const u = d.data();
       if (u.active === false) continue;
-      entries.push({ uid: d.id, icon: "👤", name: personLabel(u), data: {
-        mitt_ragione_sociale: u.ragione_sociale, mitt_nome: u.nome, mitt_cognome: u.cognome, mitt_telefono: u.telefono,
-        mitt_email: u.email, pickup_indirizzo: u.indirizzo, pickup_cap: u.cap, pickup_citta: u.citta, pickup_provincia: u.provincia,
-      }, extra: [u.ragione_sociale, u.email, u.telefono] });
+      const name = u.ragione_sociale || personLabel(u);
+      entries.push({ uid: d.id, name, label: [name, u.ragione_sociale ? personLabel(u) : "", u.email].filter((x, i, a) => x && a.indexOf(x) === i).join(" · "),
+        data: { mitt_ragione_sociale: u.ragione_sociale, mitt_nome: u.nome, mitt_cognome: u.cognome, mitt_telefono: u.telefono,
+          mitt_email: u.email, pickup_indirizzo: u.indirizzo, pickup_cap: u.cap, pickup_citta: u.citta, pickup_provincia: u.provincia } });
     }
     const manual = await getDocs(query(collection(db, "shipments"), where("user_id", "==", null)));
     const seen = new Set();
+    // dal più recente: per ogni cliente non registrato si tengono i dati dell'ultimo ordine
     for (const s of manual.docs.map((d) => d.data()).sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""))) {
-      const key = [senderName(s), s.pickup_indirizzo].join("|").toLowerCase();
-      if (senderName(s) === "—" || seen.has(key)) continue;
-      seen.add(key);
-      entries.push({ uid: "", icon: "🕘", name: senderName(s), data: Object.fromEntries(
-        ["mitt_ragione_sociale", "mitt_nome", "mitt_cognome", "mitt_telefono", "mitt_email", "pickup_indirizzo", "pickup_cap", "pickup_citta", "pickup_provincia"].map((k) => [k, s[k]])),
-      extra: [s.mitt_telefono, s.pickup_citta] });
+      const name = senderName(s);
+      if (name === "—" || seen.has(name.trim().toLowerCase())) continue;
+      seen.add(name.trim().toLowerCase());
+      entries.push({ uid: "", name, label: `${[name, s.pickup_citta].filter(Boolean).join(" · ")} — ${t("not_registered_suffix")}`,
+        data: Object.fromEntries(SENDER_KEYS.map((k) => [k, s[k]])) });
     }
-  } catch (e) { return; }
-  const list = document.getElementById("client-list");
-  const input = document.getElementById("client-search");
-  if (!list || !input || !document.body.contains(form)) return;
-  const labels = new Map();
-  for (const e of entries) {
-    let label = `${e.icon} ${[e.name, ...e.extra.filter(Boolean)].filter((x, i, a) => a.indexOf(x) === i).join(" · ")}`;
-    while (labels.has(label)) label += " ";
-    labels.set(label, e);
-  }
-  list.innerHTML = [...labels.keys()].map((l) => `<option value="${esc(l)}"></option>`).join("");
+  } catch (e) { console.error(e); return; }
+  const sel = document.getElementById("client-select");
+  if (!sel || !document.body.contains(form)) return;
+  const collator = new Intl.Collator(lang(), { sensitivity: "base", numeric: true });
+  entries.sort((a, b) => collator.compare(a.name, b.name));
+  sel.insertAdjacentHTML("beforeend", entries.map((e, i) => `<option value="${i}">${esc(e.label)}</option>`).join(""));
   const linked = document.getElementById("client-linked");
   const showLink = () => {
     const uid = form.elements.link_user_id.value;
-    const e = [...labels.values()].find((x) => x.uid && x.uid === uid);
+    const e = entries.find((x) => x.uid && x.uid === uid);
     linked.innerHTML = e ? `🔗 ${esc(t("client_linked", { name: e.name }))} <a href="#" id="unlink">${esc(t("unlink"))}</a>` : "";
     const u = document.getElementById("unlink");
     if (u) u.onclick = (ev) => { ev.preventDefault(); form.elements.link_user_id.value = ""; showLink(); };
   };
-  input.oninput = () => {
-    const e = labels.get(input.value);
-    if (!e) return;
-    for (const [k, v] of Object.entries(e.data)) if (form.elements[k]) form.elements[k].value = v || "";
-    form.elements.link_user_id.value = e.uid;
-    input.value = "";
+  // dopo un errore di compilazione il cliente collegato resta selezionato
+  const pre = entries.findIndex((x) => x.uid && x.uid === form.elements.link_user_id.value);
+  if (pre >= 0) sel.value = String(pre);
+  sel.onchange = () => {
+    const e = entries[Number(sel.value)];
+    if (sel.value === "" || !e) {
+      // cliente nuovo: campi del mittente vuoti da compilare a mano
+      for (const k of SENDER_KEYS) if (form.elements[k]) form.elements[k].value = "";
+      form.elements.link_user_id.value = "";
+    } else {
+      for (const k of SENDER_KEYS) if (form.elements[k]) form.elements[k].value = e.data[k] || "";
+      form.elements.link_user_id.value = e.uid;
+    }
     showLink();
   };
   showLink();
@@ -684,8 +689,8 @@ function viewNew(_, __, f, errors = {}, edit = null) {
   render(`<div class="medium"><h1>${esc(edit ? t("edit_title", { code: edit.code }) : t("new_shipment_title"))}</h1><p class="muted">${esc(intro)}</p>
     ${Object.keys(errors).length ? `<div class="flash flash-error">${esc(t("form_has_errors"))}</div>` : ""}
     <form id="ship" novalidate>
-    ${section(1, t("sender"), (byAdmin && !edit ? `<div class="field col-12 recent-box"><label for="client-search">${esc(t("client_search"))}</label>
-        <input id="client-search" list="client-list" autocomplete="off" placeholder="${esc(t("client_search_ph"))}"><datalist id="client-list"></datalist>
+    ${section(1, t("sender"), (byAdmin && !edit ? `<div class="field col-12 recent-box"><label for="client-select">${esc(t("client_select"))}</label>
+        <select id="client-select" class="sort-select"><option value="">${esc(t("client_unregistered_new"))}</option></select>
         <input type="hidden" name="link_user_id" value="${esc(f.link_user_id || "")}"><div id="client-linked" class="small" style="margin-top:6px"></div></div>` : "")
       + field("mitt_ragione_sociale", t("company_name"), f, errors, { required: false, col: "col-12" })
       + field("mitt_nome", t("contact_first_name"), f, errors, { required: false }) + field("mitt_cognome", t("contact_last_name"), f, errors, { required: false })
