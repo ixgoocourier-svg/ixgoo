@@ -240,7 +240,11 @@ export const TR = {
   "email_ok_badge": "Email επιβεβαιωμένο",
   "confirm_approve": "Να επιβεβαιωθεί ο χρήστης {email} χωρίς επαλήθευση του email;",
   "flash_user_approved": "Ο χρήστης {email} επιβεβαιώθηκε.",
-  "email_status": "Email"
+  "email_status": "Email",
+  "client_search": "🔎 Αναζήτηση πελάτη",
+  "client_search_ph": "Όνομα, εταιρεία, email ή τηλέφωνο…",
+  "client_linked": "Η παραγγελία θα εμφανίζεται και στην περιοχή του πελάτη {name}.",
+  "unlink": "Χωρίς σύνδεση"
  },
  "en": {
   "app_title": "Shipment booking",
@@ -479,7 +483,11 @@ export const TR = {
   "email_ok_badge": "Email confirmed",
   "confirm_approve": "Confirm {email} without email verification?",
   "flash_user_approved": "User {email} confirmed.",
-  "email_status": "Email"
+  "email_status": "Email",
+  "client_search": "🔎 Find customer",
+  "client_search_ph": "Name, company, email or phone…",
+  "client_linked": "The order will also appear in {name}'s customer area.",
+  "unlink": "Don't link"
  },
  "it": {
   "app_title": "Prenotazione spedizioni",
@@ -718,7 +726,11 @@ export const TR = {
   "email_ok_badge": "Email confermata",
   "confirm_approve": "Confermare l'utente {email} senza la verifica dell'email?",
   "flash_user_approved": "Utente {email} confermato.",
-  "email_status": "Email"
+  "email_status": "Email",
+  "client_search": "🔎 Cerca cliente",
+  "client_search_ph": "Nome, azienda, email o telefono…",
+  "client_linked": "L'ordine apparirà anche nell'area del cliente {name}.",
+  "unlink": "Non collegare"
  },
  "fr": {
   "app_title": "Réservation d'envois",
@@ -957,7 +969,11 @@ export const TR = {
   "email_ok_badge": "E-mail confirmé",
   "confirm_approve": "Confirmer {email} sans vérification de l'e-mail ?",
   "flash_user_approved": "Utilisateur {email} confirmé.",
-  "email_status": "E-mail"
+  "email_status": "E-mail",
+  "client_search": "🔎 Rechercher un client",
+  "client_search_ph": "Nom, entreprise, e-mail ou téléphone…",
+  "client_linked": "La commande apparaîtra aussi dans l'espace client de {name}.",
+  "unlink": "Ne pas lier"
  },
  "he": {
   "app_title": "הזמנת משלוחים",
@@ -1196,7 +1212,11 @@ export const TR = {
   "email_ok_badge": "אימייל אושר",
   "confirm_approve": "לאשר את {email} ללא אימות אימייל?",
   "flash_user_approved": "המשתמש {email} אושר.",
-  "email_status": "אימייל"
+  "email_status": "אימייל",
+  "client_search": "🔎 חיפוש לקוח",
+  "client_search_ph": "שם, חברה, אימייל או טלפון…",
+  "client_linked": "ההזמנה תופיע גם באזור הלקוח של {name}.",
+  "unlink": "ללא קישור"
  },
  "es": {
   "app_title": "Reserva de envíos",
@@ -1435,7 +1455,11 @@ export const TR = {
   "email_ok_badge": "Correo confirmado",
   "confirm_approve": "¿Confirmar a {email} sin verificar el correo?",
   "flash_user_approved": "Usuario {email} confirmado.",
-  "email_status": "Correo"
+  "email_status": "Correo",
+  "client_search": "🔎 Buscar cliente",
+  "client_search_ph": "Nombre, empresa, correo o teléfono…",
+  "client_linked": "El pedido aparecerá también en el área del cliente {name}.",
+  "unlink": "No vincular"
  },
  "de": {
   "app_title": "Sendungsbuchung",
@@ -1674,7 +1698,11 @@ export const TR = {
   "email_ok_badge": "E-Mail bestätigt",
   "confirm_approve": "{email} ohne E-Mail-Bestätigung freischalten?",
   "flash_user_approved": "Benutzer {email} bestätigt.",
-  "email_status": "E-Mail"
+  "email_status": "E-Mail",
+  "client_search": "🔎 Kunde suchen",
+  "client_search_ph": "Name, Firma, E-Mail oder Telefon…",
+  "client_linked": "Der Auftrag erscheint auch im Kundenbereich von {name}.",
+  "unlink": "Nicht verknüpfen"
  },
  "ru": {
   "app_title": "Бронирование отправлений",
@@ -1913,7 +1941,11 @@ export const TR = {
   "email_ok_badge": "Email подтверждён",
   "confirm_approve": "Подтвердить {email} без проверки email?",
   "flash_user_approved": "Пользователь {email} подтверждён.",
-  "email_status": "Email"
+  "email_status": "Email",
+  "client_search": "🔎 Найти клиента",
+  "client_search_ph": "Имя, компания, email или телефон…",
+  "client_linked": "Заказ также появится в кабинете клиента {name}.",
+  "unlink": "Не привязывать"
  },
  "zh": {
   "app_title": "快递预约",
@@ -2152,6 +2184,10 @@ export const TR = {
   "email_ok_badge": "邮箱已确认",
   "confirm_approve": "在未验证邮箱的情况下确认 {email}？",
   "flash_user_approved": "用户 {email} 已确认。",
-  "email_status": "邮箱"
+  "email_status": "邮箱",
+  "client_search": "🔎 查找客户",
+  "client_search_ph": "姓名、公司、邮箱或电话…",
+  "client_linked": "该订单也会显示在客户 {name} 的页面中。",
+  "unlink": "不关联"
  }
 };

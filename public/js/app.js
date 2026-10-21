@@ -613,6 +613,60 @@ async function loadRecentRecipients(form) {
   };
 }
 
+// Ricerca cliente per l'admin: clienti registrati (l'ordine si collega al loro account) e mittenti
+// degli ordini già inseriti a mano. Scegliendone uno si compilano mittente e indirizzo di ritiro.
+async function loadClientDirectory(form) {
+  const entries = [];
+  try {
+    const clients = await getDocs(query(collection(db, "users"), where("role", "==", "cliente")));
+    for (const d of clients.docs) {
+      const u = d.data();
+      if (u.active === false) continue;
+      entries.push({ uid: d.id, icon: "👤", name: personLabel(u), data: {
+        mitt_ragione_sociale: u.ragione_sociale, mitt_nome: u.nome, mitt_cognome: u.cognome, mitt_telefono: u.telefono,
+        mitt_email: u.email, pickup_indirizzo: u.indirizzo, pickup_cap: u.cap, pickup_citta: u.citta, pickup_provincia: u.provincia,
+      }, extra: [u.ragione_sociale, u.email, u.telefono] });
+    }
+    const manual = await getDocs(query(collection(db, "shipments"), where("user_id", "==", null)));
+    const seen = new Set();
+    for (const s of manual.docs.map((d) => d.data()).sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""))) {
+      const key = [senderName(s), s.pickup_indirizzo].join("|").toLowerCase();
+      if (senderName(s) === "—" || seen.has(key)) continue;
+      seen.add(key);
+      entries.push({ uid: "", icon: "🕘", name: senderName(s), data: Object.fromEntries(
+        ["mitt_ragione_sociale", "mitt_nome", "mitt_cognome", "mitt_telefono", "mitt_email", "pickup_indirizzo", "pickup_cap", "pickup_citta", "pickup_provincia"].map((k) => [k, s[k]])),
+      extra: [s.mitt_telefono, s.pickup_citta] });
+    }
+  } catch (e) { return; }
+  const list = document.getElementById("client-list");
+  const input = document.getElementById("client-search");
+  if (!list || !input || !document.body.contains(form)) return;
+  const labels = new Map();
+  for (const e of entries) {
+    let label = `${e.icon} ${[e.name, ...e.extra.filter(Boolean)].filter((x, i, a) => a.indexOf(x) === i).join(" · ")}`;
+    while (labels.has(label)) label += " ";
+    labels.set(label, e);
+  }
+  list.innerHTML = [...labels.keys()].map((l) => `<option value="${esc(l)}"></option>`).join("");
+  const linked = document.getElementById("client-linked");
+  const showLink = () => {
+    const uid = form.elements.link_user_id.value;
+    const e = [...labels.values()].find((x) => x.uid && x.uid === uid);
+    linked.innerHTML = e ? `🔗 ${esc(t("client_linked", { name: e.name }))} <a href="#" id="unlink">${esc(t("unlink"))}</a>` : "";
+    const u = document.getElementById("unlink");
+    if (u) u.onclick = (ev) => { ev.preventDefault(); form.elements.link_user_id.value = ""; showLink(); };
+  };
+  input.oninput = () => {
+    const e = labels.get(input.value);
+    if (!e) return;
+    for (const [k, v] of Object.entries(e.data)) if (form.elements[k]) form.elements[k].value = v || "";
+    form.elements.link_user_id.value = e.uid;
+    input.value = "";
+    showLink();
+  };
+  showLink();
+}
+
 function viewNew(_, __, f, errors = {}, edit = null) {
   const u = state.profile;
   // l'admin inserisce ordini per clienti non registrati: modulo vuoto, email facoltativa
@@ -630,7 +684,10 @@ function viewNew(_, __, f, errors = {}, edit = null) {
   render(`<div class="medium"><h1>${esc(edit ? t("edit_title", { code: edit.code }) : t("new_shipment_title"))}</h1><p class="muted">${esc(intro)}</p>
     ${Object.keys(errors).length ? `<div class="flash flash-error">${esc(t("form_has_errors"))}</div>` : ""}
     <form id="ship" novalidate>
-    ${section(1, t("sender"), field("mitt_ragione_sociale", t("company_name"), f, errors, { required: false, col: "col-12" })
+    ${section(1, t("sender"), (byAdmin && !edit ? `<div class="field col-12 recent-box"><label for="client-search">${esc(t("client_search"))}</label>
+        <input id="client-search" list="client-list" autocomplete="off" placeholder="${esc(t("client_search_ph"))}"><datalist id="client-list"></datalist>
+        <input type="hidden" name="link_user_id" value="${esc(f.link_user_id || "")}"><div id="client-linked" class="small" style="margin-top:6px"></div></div>` : "")
+      + field("mitt_ragione_sociale", t("company_name"), f, errors, { required: false, col: "col-12" })
       + field("mitt_nome", t("contact_first_name"), f, errors, { required: false }) + field("mitt_cognome", t("contact_last_name"), f, errors, { required: false })
       + field("mitt_telefono", t("phone"), f, errors, { type: "tel", required: false }) + field("mitt_email", t("email"), f, errors, { type: "email", required: false }))}
     ${section(2, t("pickup"), field("pickup_date", t("pickup_date"), f, errors, { required: false, type: "date", attrs: edit ? "" : `min="${todayIso()}"` })
@@ -658,6 +715,7 @@ function viewNew(_, __, f, errors = {}, edit = null) {
   edit ? t("edit_title", { code: edit.code }) : t("nav_new_shipment"));
   document.getElementById("swap").onclick = () => swapPickupAndDestination(document.getElementById("ship"));
   loadRecentRecipients(document.getElementById("ship"));
+  if (byAdmin && !edit) loadClientDirectory(document.getElementById("ship"));
   document.getElementById("ship").onsubmit = async (e) => {
     e.preventDefault();
     const d = formData(e.target);
@@ -689,7 +747,8 @@ function viewNew(_, __, f, errors = {}, edit = null) {
     }
     Object.assign(data, byAdmin ? {
       // ordine inserito dall'ufficio: nessun account cliente, già confermato
-      colli, user_id: null, created_by: state.user.uid, status: "confermata", created_at: now,
+      // collegato all'account del cliente scelto nella ricerca, altrimenti cliente non registrato
+      colli, user_id: d.link_user_id || null, created_by: state.user.uid, status: "confermata", created_at: now,
       confirmed_at: now, confirmed_by: state.user.uid, delivered_at: null, delivered_by: null, cancelled_at: null,
     } : {
       colli, user_id: state.user.uid, status: "in_attesa", created_at: now,

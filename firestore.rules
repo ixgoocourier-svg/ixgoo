@@ -90,9 +90,12 @@ service cloud.firestore {
           && request.resource.data.user_id == request.auth.uid
           && request.resource.data.status == 'in_attesa'
           && request.resource.data.confirmed_by == null)
-        // ordine inserito da un admin per un cliente non registrato: già confermato
+        // ordine inserito da un admin, per un cliente non registrato (user_id null) o per un cliente
+        // registrato esistente (l'ordine compare nella sua area): già confermato
         || (isAdmin()
-          && request.resource.data.user_id == null
+          && (request.resource.data.user_id == null
+              || (request.resource.data.user_id is string
+                  && exists(/databases/$(database)/documents/users/$(request.resource.data.user_id))))
           && request.resource.data.created_by == request.auth.uid
           && request.resource.data.status == 'confermata'
           && request.resource.data.confirmed_by == request.auth.uid)
