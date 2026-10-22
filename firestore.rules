@@ -121,11 +121,23 @@ service cloud.firestore {
           && request.resource.data.confirmed_by == request.auth.uid
           && onlyChanged(['status', 'confirmed_at', 'confirmed_by']))
         // l'admin annulla
-        || (isAdmin() && resource.data.status in ['in_attesa', 'confermata']
+        || (isAdmin() && resource.data.status in ['in_attesa', 'confermata', 'ritirata']
           && request.resource.data.status == 'annullata'
           && onlyChanged(['status', 'cancelled_at', 'cancel_reason']))
-        // admin o corriere registrano la consegna
+        // admin o corriere ricevono il pacco dal mittente ("Ricevuta")
         || (isStaff() && resource.data.status == 'confermata'
+          && request.resource.data.status == 'ritirata'
+          && request.resource.data.picked_up_by == request.auth.uid
+          && onlyChanged(['status', 'picked_up_at', 'picked_up_by']))
+        // ricezione premuta per errore: la annulla un admin o chi l'ha registrata
+        || (isStaff() && resource.data.status == 'ritirata'
+          && (isAdmin() || resource.data.get('picked_up_by', null) == request.auth.uid)
+          && request.resource.data.status == 'confermata'
+          && request.resource.data.picked_up_at == null
+          && request.resource.data.picked_up_by == null
+          && onlyChanged(['status', 'picked_up_at', 'picked_up_by']))
+        // admin o corriere registrano la consegna di un pacco ricevuto
+        || (isStaff() && resource.data.status == 'ritirata'
           && request.resource.data.status == 'consegnata'
           && request.resource.data.delivered_by == request.auth.uid
           && validProof()
@@ -133,14 +145,16 @@ service cloud.firestore {
         // consegna registrata per errore: la annulla un admin o il corriere che l'ha registrata
         || (isStaff() && resource.data.status == 'consegnata'
           && (isAdmin() || resource.data.delivered_by == request.auth.uid)
-          && request.resource.data.status == 'confermata'
+          // torna "ricevuta" se il pacco era stato ricevuto, altrimenti "confermata" (vecchie consegne)
+          && ((request.resource.data.status == 'ritirata' && resource.data.get('picked_up_at', null) != null)
+              || (request.resource.data.status == 'confermata' && resource.data.get('picked_up_at', null) == null))
           && request.resource.data.delivered_at == null
           && request.resource.data.delivered_by == null
           && request.resource.data.get('received_by', null) == null
           && request.resource.data.get('signature', null) == null
           && onlyChanged(['status', 'delivered_at', 'delivered_by', 'received_by', 'signature']))
         // modifica dei dati dell'ordine fino alla consegna: il cliente proprietario o un admin
-        || (resource.data.status in ['in_attesa', 'confermata']
+        || (resource.data.status in ['in_attesa', 'confermata', 'ritirata']
           && ((verified() && resource.data.user_id == request.auth.uid) || isAdmin())
           && request.resource.data.updated_by == request.auth.uid
           && request.resource.data.tipo in ['busta', 'pacco']

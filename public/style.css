@@ -325,3 +325,9 @@ footer a { color: var(--muted); }
 
 /* zona pericolosa in fondo alla scheda spedizione */
 .danger-zone { margin-top: 28px; padding-top: 18px; border-top: 1px dashed #e6b8b4; text-align: end; }
+
+/* fase "Ricevuta" (pacco ritirato dal mittente) */
+.badge-ritirata { background: #efe6fb; color: #5b3a8e; }
+.status-banner.ritirata { background: #efe6fb; color: #3f2766; }
+.pick-box { border: 2px solid var(--gold); background: #fffaf0; }
+.route-link { text-decoration: none; color: inherit; display: block; }

@@ -16,6 +16,8 @@ spagnolo, tedesco, russo e cinese.
    L'admin può anche inserire direttamente un ordine per un cliente non registrato (menu
    **Nuova spedizione**): nasce già confermato, con l'etichetta QR subito stampabile.
 4. Nell'area del cliente compare subito il QR code con l'etichetta da stampare e attaccare al pacco.
+   La spedizione confermata è nella pagina **Ricevute** (da ricevere dal mittente): quando si ha il
+   pacco si preme **📦 Ricevuta** e passa nella pagina **Consegne** (da consegnare).
 5. Il corriere scansiona il QR (si apre la spedizione, dopo il login) e preme
    **"Consegna effettuata il giorno … alle ore …"**. Il cliente vede la consegna nella sua area.
    Prima di registrarla l'app chiede conferma; una consegna registrata per errore si annulla con

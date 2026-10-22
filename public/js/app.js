@@ -18,7 +18,10 @@ const fb = initializeApp(firebaseConfig);
 const auth = getAuth(fb);
 const db = getFirestore(fb);
 
-const STATUS = ["in_attesa", "confermata", "consegnata", "annullata"];
+// in_attesa → confermata (admin) → ritirata ("Ricevuta": pacco preso dal mittente) → consegnata; annullata
+const STATUS = ["in_attesa", "confermata", "ritirata", "consegnata", "annullata"];
+// stati in cui esiste l'etichetta con QR
+const hasLabel = (s) => ["confermata", "ritirata", "consegnata"].includes(s.status);
 // questi indirizzi diventano admin alla registrazione (stessa lista in firestore.rules)
 const ADMIN_EMAILS = ["ixgoo@outlook.com.gr", "pierpaolomurgioni@gmail.com", "ixgoocourier@gmail.com"];
 // Avviso sul telefono degli admin a ogni nuova prenotazione, tramite ntfy (https://ntfy.sh, gratuito).
@@ -124,8 +127,8 @@ function renderHeader() {
   let nav = "";
   if (isVerified() && state.profile) {
     if (r === "cliente") nav += link("#/area-cliente", "nav_my_shipments") + link("#/nuova", "nav_new_shipment");
-    else if (r === "admin") nav += link("#/admin", "nav_orders", state.pending) + link("#/nuova", "nav_new_shipment") + link("#/corriere", "nav_deliveries") + link("#/utenti", "nav_users");
-    else if (r === "corriere") nav += link("#/corriere", "nav_deliveries");
+    else if (r === "admin") nav += link("#/admin", "nav_orders", state.pending) + link("#/nuova", "nav_new_shipment") + link("#/ricevute", "nav_pickups") + link("#/corriere", "nav_deliveries") + link("#/utenti", "nav_users");
+    else if (r === "corriere") nav += link("#/ricevute", "nav_pickups") + link("#/corriere", "nav_deliveries");
     nav += link("#/profilo", "nav_profile");
   }
   if (state.user) nav += `<button class="linklike" id="logout" type="button">${esc(t("nav_logout"))}</button>`;
@@ -181,7 +184,7 @@ function errorView(code) {
 function homeFor() {
   if (!state.user) return "#/";
   if (!isVerified()) return "#/verifica";
-  return { admin: "#/admin", corriere: "#/corriere" }[role()] || "#/area-cliente";
+  return { admin: "#/admin", corriere: "#/ricevute" }[role()] || "#/area-cliente";
 }
 
 // ------------------------------------------------------------------ avvisi per gli admin
@@ -254,12 +257,12 @@ const routes = {
   "": viewHome, privacy: () => viewLegal("privacy"), termini: () => viewLegal("terms"), cookie: () => viewLegal("cookies"),
   registrati: viewRegister, accedi: viewLogin, "password-dimenticata": viewForgot,
   verifica: viewVerify, "area-cliente": viewClient, nuova: viewNew, spedizione: viewDetail,
-  etichetta: viewLabel, modifica: viewEdit, admin: viewAdmin, utenti: viewUsers, corriere: viewCourier, profilo: viewProfile,
+  etichetta: viewLabel, modifica: viewEdit, admin: viewAdmin, utenti: viewUsers, ricevute: viewPickups, corriere: viewCourier, profilo: viewProfile,
 };
 // pagine che richiedono login (e quali ruoli)
 const guards = {
   "area-cliente": ["cliente"], nuova: ["cliente", "admin"], modifica: ["cliente", "admin"], spedizione: [], etichetta: [],
-  admin: ["admin"], utenti: ["admin"], corriere: ["admin", "corriere"], profilo: [],
+  admin: ["admin"], utenti: ["admin"], ricevute: ["admin", "corriere"], corriere: ["admin", "corriere"], profilo: [],
 };
 
 function route() {
@@ -494,7 +497,7 @@ function viewClient() {
       <tr class="rowlink" data-href="#/spedizione/${esc(s.code)}"><td class="code">${esc(s.code)}</td>
       <td>${itDate(s.pickup_date)} ${esc(s.pickup_time)}<br><span class="muted small">${esc(s.pickup_citta)}</span></td>
       <td>${esc(s.dest_nome)}<br><span class="muted small">${esc(s.dest_citta)}</span></td><td>${badge(s.status)}</td>
-      <td>${["confermata", "consegnata"].includes(s.status) ? `<a class="btn btn-ghost small" href="#/etichetta/${esc(s.code)}">QR</a>` : ""}</td></tr>`).join("")}
+      <td>${hasLabel(s) ? `<a class="btn btn-ghost small" href="#/etichetta/${esc(s.code)}">QR</a>` : ""}</td></tr>`).join("")}
       </tbody></table></div>`
       : `<div class="empty"><p>${esc(t("no_shipments_yet"))}</p><a class="btn btn-primary" href="#/nuova">${esc(t("book_first"))}</a></div>`;
     bindRowLinks(el);
@@ -547,7 +550,7 @@ async function viewEdit(code) {
 }
 
 function canEdit(s) {
-  if (!["in_attesa", "confermata"].includes(s.status)) return false;
+  if (!["in_attesa", "confermata", "ritirata"].includes(s.status)) return false;
   return role() === "admin" || (role() === "cliente" && s.user_id === state.user.uid);
 }
 
@@ -684,7 +687,7 @@ function viewNew(_, __, f, errors = {}, edit = null) {
   });
   const section = (n, title, body) => `<section class="card"><h2><span class="num">${n}</span> ${esc(title)}</h2><div class="grid">${body}</div></section>`;
   const intro = edit
-    ? t("edit_intro") + (edit.s.status === "confermata" ? " " + t("reprint_hint") : "")
+    ? t("edit_intro") + (edit.s.status !== "in_attesa" ? " " + t("reprint_hint") : "")
     : t(byAdmin ? "admin_new_intro" : "new_shipment_intro");
   render(`<div class="medium"><h1>${esc(edit ? t("edit_title", { code: edit.code }) : t("new_shipment_title"))}</h1><p class="muted">${esc(intro)}</p>
     ${Object.keys(errors).length ? `<div class="flash flash-error">${esc(t("form_has_errors"))}</div>` : ""}
@@ -799,20 +802,20 @@ function viewDetail(code) {
     allowed();
     if (!snap.exists()) return errorView(404);
     const s = snap.data();
-    let owner = null; let confBy = null; let delBy = null; let createdBy = null;
+    let owner = null; let confBy = null; let delBy = null; let createdBy = null; let pickBy = null;
     if (isStaff()) {
-      [owner, confBy, delBy, createdBy] = await Promise.all([personName(s.user_id), personName(s.confirmed_by), personName(s.delivered_by), personName(s.created_by)]);
+      [owner, confBy, delBy, createdBy, pickBy] = await Promise.all([personName(s.user_id), personName(s.confirmed_by), personName(s.delivered_by), personName(s.created_by), personName(s.picked_up_by)]);
     }
-    renderDetail(s, owner, confBy, delBy, createdBy);
+    renderDetail(s, owner, confBy, delBy, createdBy, pickBy);
   }, () => errorView(404)));
 }
 
-function renderDetail(s, owner, confBy, delBy, createdBy) {
+function renderDetail(s, owner, confBy, delBy, createdBy, pickBy) {
   const staff = isStaff();
   const r = role();
   const fullName = (u) => (u ? personLabel(u) : "");
   const now = nowStr();
-  const banner = { in_attesa: t("banner_pending"), confermata: t("banner_confirmed"), annullata: t("banner_cancelled"),
+  const banner = { in_attesa: t("banner_pending"), confermata: t("banner_confirmed"), ritirata: t("banner_picked"), annullata: t("banner_cancelled"),
     consegnata: t("banner_delivered", { date: itDate(s.delivered_at), time: hm(s.delivered_at) }) }[s.status];
   const cancelForm = (id) => `<details><summary class="btn btn-danger">${esc(t("cancel_booking"))}</summary>
     <form id="${id}" style="margin-top:10px"><div class="field"><label for="${id}-m">${esc(t("cancel_reason"))}</label><input id="${id}-m" name="motivo"></div><p></p>
@@ -822,7 +825,14 @@ function renderDetail(s, owner, confBy, delBy, createdBy) {
     actions += `<div class="card" style="border:2px solid var(--gold)"><h2>${esc(t("admin_action"))}</h2><p class="muted">${esc(t("admin_confirm_text2"))}</p>
       <div class="actions"><button class="btn btn-ok btn-lg" id="confirm">✓ ${esc(t("confirm_receipt"))}</button>${cancelForm("acancel")}</div></div>`;
   }
+  // confermata: il pacco va ancora ricevuto dal mittente
   if (staff && s.status === "confermata") {
+    actions += `<div class="card pick-box"><h2>📦 ${esc(t("to_pickup"))}</h2><p class="muted small">${esc(t("pickups_intro"))}</p>
+      <button class="btn btn-gold btn-lg btn-block" id="picked" type="button">${esc(t("btn_picked"))}</button>
+      ${r === "admin" ? `<div style="margin-top:12px">${cancelForm("acancel")}</div>` : ""}</div>`;
+  }
+  // ricevuta: si registra la consegna (oppure si annulla la ricezione premuta per errore)
+  if (staff && s.status === "ritirata") {
     const d = now.slice(0, 10); const h = now.slice(11, 16);
     actions += `<div class="card deliver-box"><h2>🚚 ${esc(t("register_delivery"))}</h2><form id="deliver"><div class="grid">
       <div class="field col-6"><label for="d">${esc(t("date"))}</label><input id="d" type="date" name="data" value="${d}" max="${d}" required></div>
@@ -832,9 +842,11 @@ function renderDetail(s, owner, confBy, delBy, createdBy) {
         <div class="sig-wrap"><canvas id="sig" class="sig-pad"></canvas><button type="button" id="sig-clear" class="btn btn-ghost small">${esc(t("clear_signature"))}</button></div>
         <div class="hint">${esc(t("signature_hint"))}</div></div></div>
       <button class="btn btn-ok btn-lg btn-block" type="submit" id="deliver-btn">✓ ${esc(t("btn_delivered", { date: itDate(d), time: h }))}</button></form>
-      ${r === "admin" ? `<div style="margin-top:12px">${cancelForm("acancel")}</div>` : ""}</div>`;
+      <div class="actions" style="margin-top:12px">
+        ${r === "admin" || s.picked_up_by === state.user.uid ? `<button class="btn btn-ghost" id="undo-pick" type="button">↩ ${esc(t("undo_pickup"))}</button>` : ""}
+        ${r === "admin" ? cancelForm("acancel") : ""}</div></div>`;
   }
-  const qrButtons = ["confermata", "consegnata"].includes(s.status)
+  const qrButtons = hasLabel(s)
     ? `<a class="btn btn-gold" href="#/etichetta/${esc(s.code)}">🖨 ${esc(t("print_label"))}</a>
        <button class="btn btn-ghost" id="png">${esc(t("download_qr"))}</button>` : "";
   const editButton = canEdit(s) ? `<a class="btn btn-ghost" href="#/modifica/${esc(s.code)}">✏️ ${esc(t("edit"))}</a>` : "";
@@ -869,6 +881,8 @@ function renderDetail(s, owner, confBy, delBy, createdBy) {
         <li class="done">${esc(t("tl_created"))}: ${itDate(s.created_at)} ${hm(s.created_at)}</li>
         ${s.confirmed_at ? `<li class="done">${esc(t("tl_confirmed"))}: ${itDate(s.confirmed_at)} ${hm(s.confirmed_at)}${staff && confBy ? " · " + esc(fullName(confBy)) : ""}</li>`
           : s.status === "in_attesa" ? `<li>${esc(t("tl_confirmed"))}…</li>` : ""}
+        ${s.picked_up_at ? `<li class="done">${esc(t("tl_picked"))}: ${itDate(s.picked_up_at)} ${hm(s.picked_up_at)}${staff && pickBy ? " · " + esc(fullName(pickBy)) : ""}</li>`
+          : ["in_attesa", "confermata"].includes(s.status) ? `<li>${esc(t("tl_picked"))}…</li>` : ""}
         ${s.delivered_at ? `<li class="done">${esc(t("tl_delivered"))}: ${itDate(s.delivered_at)} ${hm(s.delivered_at)}${staff && delBy ? " · " + esc(fullName(delBy)) : ""}</li>`
           : s.status !== "annullata" ? `<li>${esc(t("tl_delivered"))}…</li>` : ""}
         ${s.cancelled_at ? `<li class="done">${esc(t("status_annullata"))}: ${itDate(s.cancelled_at)} ${hm(s.cancelled_at)}${s.cancel_reason ? " — " + esc(s.cancel_reason) : ""}</li>` : ""}
@@ -901,9 +915,15 @@ function renderDetail(s, owner, confBy, delBy, createdBy) {
       route();
     }
   });
+  on("picked", "onclick", (e) => markPickedUp(s.code, e.target));
+  on("undo-pick", "onclick", () => {
+    if (confirm(t("confirm_undo_pickup"))) {
+      act({ status: "confermata", picked_up_at: null, picked_up_by: null }, t("flash_undo_pickup", { code: s.code }));
+    }
+  });
   on("undo", "onclick", () => {
     if (confirm(t("confirm_undo_delivery"))) {
-      act({ status: "confermata", delivered_at: null, delivered_by: null, received_by: null, signature: null }, t("flash_undo_delivery", { code: s.code }));
+      act({ status: s.picked_up_at ? "ritirata" : "confermata", delivered_at: null, delivered_by: null, received_by: null, signature: null }, t("flash_undo_delivery", { code: s.code }));
     }
   });
   const form = document.getElementById("deliver");
@@ -916,8 +936,8 @@ function renderDetail(s, owner, confBy, delBy, createdBy) {
     form.onsubmit = (e) => {
       e.preventDefault();
       const when = `${d.value} ${h.value}`;
-      if (!d.value || !h.value) { flash(t("err_datetime"), "error"); return renderDetail(s, owner, confBy, delBy, createdBy); }
-      if (when > nowStr(new Date(Date.now() + 5 * 60000)).slice(0, 16)) { flash(t("flash_deliver_future"), "error"); return renderDetail(s, owner, confBy, delBy, createdBy); }
+      if (!d.value || !h.value) { flash(t("err_datetime"), "error"); return renderDetail(s, owner, confBy, delBy, createdBy, pickBy); }
+      if (when > nowStr(new Date(Date.now() + 5 * 60000)).slice(0, 16)) { flash(t("flash_deliver_future"), "error"); return renderDetail(s, owner, confBy, delBy, createdBy, pickBy); }
       // un pulsante grande si preme facilmente per sbaglio: chiedi conferma
       if (!confirm(t("confirm_deliver", { date: itDate(d.value), time: h.value }))) return;
       busy(form, true);
@@ -1010,7 +1030,7 @@ async function viewLabel(code) {
   try { snap = await getDoc(doc(db, "shipments", code)); } catch (e) { return errorView(404); }
   if (!snap.exists()) return errorView(404);
   const s = snap.data();
-  if (!["confermata", "consegnata"].includes(s.status)) { flash(t("flash_label_after_confirm"), "info"); return go(`#/spedizione/${code}`); }
+  if (!hasLabel(s)) { flash(t("flash_label_after_confirm"), "info"); return go(`#/spedizione/${code}`); }
   const svg = makeQr(s).createSvgTag({ cellSize: 5, margin: 1, scalable: true });
   render(`<div class="actions no-print" style="justify-content:space-between;margin:0 auto 16px;max-width:760px">
     <a href="#/spedizione/${esc(s.code)}">← ${esc(s.code)}</a><button class="btn btn-gold" id="print">🖨 ${esc(t("print"))}</button></div>
@@ -1158,52 +1178,69 @@ function viewUsers() {
 
 // ------------------------------------------------------------------ corriere
 
-function viewCourier() {
-  render(`<div class="page-head"><h1>${esc(t("nav_deliveries"))}</h1></div><p class="muted">${esc(t("courier_intro"))}</p><div id="list"><div class="empty">${esc(t("loading"))}</div></div>`, t("nav_deliveries"));
-  // il giro di ogni corriere: elenco dei codici nell'ordine scelto, salvato in routes/{uid}
+// Pagine di lavoro di admin e corrieri:
+//  - "Ricevute" (kind "pickup"): spedizioni confermate da ricevere dal mittente → pulsante "Ricevuta"
+//  - "Consegne" (kind "delivery"): spedizioni ricevute da consegnare → si apre la scheda per la consegna
+// In entrambe il giro si ordina con ↑ ↓ (salvato in routes/{uid}, un unico elenco di codici).
+function viewPickups() { viewWorklist("pickup"); }
+function viewCourier() { viewWorklist("delivery"); }
+
+function viewWorklist(kind) {
+  const pickup = kind === "pickup";
+  const title = t(pickup ? "nav_pickups" : "nav_deliveries");
+  render(`<div class="page-head"><h1>${esc(title)}</h1></div><p class="muted">${esc(t(pickup ? "pickups_intro" : "courier_intro"))}</p><div id="list"><div class="empty">${esc(t("loading"))}</div></div>`, title);
   const routeRef = doc(db, "routes", state.user.uid);
   let all = null;
   let route = [];
-  const saveRoute = (order) => setDoc(routeRef, { order, updated_at: nowStr() }).catch(() => { flash(t("err_generic"), "error"); route = []; draw(); });
+  // salva l'ordine di questa lista senza toccare quello dell'altra
+  const saveRoute = (order) => {
+    route = order.concat(route.filter((c) => !order.includes(c)));
+    draw();
+    setDoc(routeRef, { order: route.slice(0, 500), updated_at: nowStr() }).catch(() => { flash(t("err_generic"), "error"); });
+  };
 
   function draw() {
     const el = document.getElementById("list");
     if (!el || !all) return;
     const pos = (code) => { const i = route.indexOf(code); return i === -1 ? Infinity : i; };
     // prima le spedizioni nell'ordine del giro, poi le nuove per data e ora di ritiro
-    const todo = all.filter((s) => s.status === "confermata")
+    const todo = all.filter((s) => s.status === (pickup ? "confermata" : "ritirata"))
       .sort((a, b) => (pos(a.code) - pos(b.code)) || byPickup(a, b));
-    const done = all.filter((s) => s.status === "consegnata" && (s.delivered_at || "").startsWith(todayIso()))
-      .sort((a, b) => b.delivered_at.localeCompare(a.delivered_at));
-    el.innerHTML = `<div class="page-head" style="margin-bottom:8px"><h2 style="margin:0">${esc(t("to_deliver"))} (${todo.length})</h2>
+    const doneAt = pickup ? "picked_up_at" : "delivered_at";
+    const done = all.filter((s) => (s[doneAt] || "").startsWith(todayIso()))
+      .sort((a, b) => b[doneAt].localeCompare(a[doneAt]));
+    el.innerHTML = `<div class="page-head" style="margin-bottom:8px"><h2 style="margin:0">${esc(t(pickup ? "to_pickup" : "to_deliver"))} (${todo.length})</h2>
         ${todo.length > 1 ? `<button class="btn btn-ghost small" id="reset-route">${esc(t("reset_route"))}</button>` : ""}</div>
       ${todo.length > 1 ? `<p class="small muted">${esc(t("route_hint"))}</p>` : ""}
       ${todo.map((s, i) => `<div class="card route-card">
         <div class="route-num">${i + 1}</div>
-        <a class="route-body" href="#/spedizione/${esc(s.code)}">
-          <div class="page-head" style="margin-bottom:6px"><span class="code">${esc(s.code)}</span><span class="badge badge-confermata">${esc(t("pickup"))} ${itDate(s.pickup_date)} ${esc(s.pickup_time)}</span></div>
+        <div class="route-body"><a class="route-link" href="#/spedizione/${esc(s.code)}">
+          <div class="page-head" style="margin-bottom:6px"><span class="code">${esc(s.code)}</span><span class="badge badge-${s.status}">${esc(t("pickup"))} ${itDate(s.pickup_date)} ${esc(s.pickup_time)}</span></div>
           <div class="small"><strong>${esc(t("pickup"))}:</strong> ${esc(senderName(s))} — ${esc(addr("pickup", s))}</div>
           <div class="small"><strong>${esc(t("destination"))}:</strong> ${esc(s.dest_nome)} — ${esc(addr("dest", s))}</div></a>
+          ${pickup ? `<button class="btn btn-gold small pick" style="margin-top:10px" data-code="${esc(s.code)}">${esc(t("btn_picked"))}</button>` : ""}</div>
         <div class="route-moves">
           <button class="btn btn-ghost move" data-i="${i}" data-d="-1" ${i === 0 ? "disabled" : ""} aria-label="${esc(t("move_up"))}" title="${esc(t("move_up"))}">↑</button>
           <button class="btn btn-ghost move" data-i="${i}" data-d="1" ${i === todo.length - 1 ? "disabled" : ""} aria-label="${esc(t("move_down"))}" title="${esc(t("move_down"))}">↓</button>
         </div></div>`).join("")
-        || `<div class="card empty">${esc(t("nothing_to_deliver"))}</div>`}
-      <h2>${esc(t("delivered_today"))} (${done.length})</h2><div class="card" style="padding:8px 0">
-      ${done.length ? `<table>${done.map((s) => `<tr class="rowlink" data-href="#/spedizione/${esc(s.code)}"><td class="code">${esc(s.code)}</td><td>${esc(s.dest_nome)}</td><td>${hm(s.delivered_at)}</td></tr>`).join("")}</table>` : '<div class="empty">—</div>'}</div>`;
+        || `<div class="card empty">${esc(t(pickup ? "nothing_to_pickup" : "nothing_to_deliver"))}</div>`}
+      <h2>${esc(t(pickup ? "picked_today" : "delivered_today"))} (${done.length})</h2><div class="card" style="padding:8px 0">
+      ${done.length ? `<table>${done.map((s) => `<tr class="rowlink" data-href="#/spedizione/${esc(s.code)}"><td class="code">${esc(s.code)}</td><td>${esc(pickup ? senderName(s) : s.dest_nome)}</td><td>${hm(s[doneAt])}</td></tr>`).join("")}</table>` : '<div class="empty">—</div>'}</div>`;
     bindRowLinks(el);
     el.querySelectorAll(".move").forEach((b) => {
       b.onclick = () => {
         const order = todo.map((s) => s.code);
         const i = Number(b.dataset.i); const j = i + Number(b.dataset.d);
         [order[i], order[j]] = [order[j], order[i]];
-        route = order;
-        draw();
         saveRoute(order);
       };
     });
+    el.querySelectorAll(".pick").forEach((b) => {
+      b.onclick = () => markPickedUp(b.dataset.code, b);
+    });
     const reset = document.getElementById("reset-route");
-    if (reset) reset.onclick = () => { route = []; draw(); saveRoute([]); };
+    // "Ordina per ritiro": toglie dal giro le spedizioni di questa lista (tornano in ordine automatico)
+    if (reset) reset.onclick = () => { route = route.filter((c) => !todo.some((s) => s.code === c)); saveRoute([]); };
   }
 
   unsubs.push(onSnapshot(routeRef, (snap) => {
@@ -1215,6 +1252,24 @@ function viewCourier() {
     all = snap.docs.map((d) => d.data());
     draw();
   }, denied));
+}
+
+// "Ricevuta": il pacco è stato ritirato dal mittente e passa nelle Consegne
+async function markPickedUp(code, button) {
+  if (!confirm(t("confirm_picked", { code }))) return false;
+  if (button) button.disabled = true;
+  try {
+    await updateDoc(doc(db, "shipments", code), { status: "ritirata", picked_up_at: nowStr(), picked_up_by: state.user.uid });
+    flash(t("flash_picked", { code }));
+    return true;
+  } catch (ex) {
+    console.error(ex);
+    flash(t("err_generic"), "error");
+    if (button) button.disabled = false;
+    return false;
+  } finally {
+    route();
+  }
 }
 
 // ------------------------------------------------------------------ profilo
