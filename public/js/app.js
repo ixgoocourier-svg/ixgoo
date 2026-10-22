@@ -128,7 +128,7 @@ function renderHeader() {
   if (isVerified() && state.profile) {
     if (r === "cliente") nav += link("#/area-cliente", "nav_my_shipments") + link("#/nuova", "nav_new_shipment");
     else if (r === "admin") nav += link("#/admin", "nav_orders", state.pending) + link("#/nuova", "nav_new_shipment") + link("#/ricevute", "nav_pickups") + link("#/corriere", "nav_deliveries") + link("#/utenti", "nav_users");
-    else if (r === "corriere") nav += link("#/ricevute", "nav_pickups") + link("#/corriere", "nav_deliveries");
+    else if (r === "corriere") nav += link("#/corriere", "nav_deliveries");
     nav += link("#/profilo", "nav_profile");
   }
   if (state.user) nav += `<button class="linklike" id="logout" type="button">${esc(t("nav_logout"))}</button>`;
@@ -184,7 +184,7 @@ function errorView(code) {
 function homeFor() {
   if (!state.user) return "#/";
   if (!isVerified()) return "#/verifica";
-  return { admin: "#/admin", corriere: "#/ricevute" }[role()] || "#/area-cliente";
+  return { admin: "#/admin", corriere: "#/corriere" }[role()] || "#/area-cliente";
 }
 
 // ------------------------------------------------------------------ avvisi per gli admin
@@ -262,7 +262,7 @@ const routes = {
 // pagine che richiedono login (e quali ruoli)
 const guards = {
   "area-cliente": ["cliente"], nuova: ["cliente", "admin"], modifica: ["cliente", "admin"], spedizione: [], etichetta: [],
-  admin: ["admin"], utenti: ["admin"], ricevute: ["admin", "corriere"], corriere: ["admin", "corriere"], profilo: [],
+  admin: ["admin"], utenti: ["admin"], ricevute: ["admin"], corriere: ["admin", "corriere"], profilo: [],
 };
 
 function route() {
@@ -825,8 +825,8 @@ function renderDetail(s, owner, confBy, delBy, createdBy, pickBy) {
     actions += `<div class="card" style="border:2px solid var(--gold)"><h2>${esc(t("admin_action"))}</h2><p class="muted">${esc(t("admin_confirm_text2"))}</p>
       <div class="actions"><button class="btn btn-ok btn-lg" id="confirm">✓ ${esc(t("confirm_receipt"))}</button>${cancelForm("acancel")}</div></div>`;
   }
-  // confermata: il pacco va ancora ricevuto dal mittente
-  if (staff && s.status === "confermata") {
+  // confermata: il pacco va ancora ricevuto dal mittente (solo l'admin registra la ricezione)
+  if (r === "admin" && s.status === "confermata") {
     actions += `<div class="card pick-box"><h2>📦 ${esc(t("to_pickup"))}</h2><p class="muted small">${esc(t("pickups_intro"))}</p>
       <button class="btn btn-gold btn-lg btn-block" id="picked" type="button">${esc(t("btn_picked"))}</button>
       ${r === "admin" ? `<div style="margin-top:12px">${cancelForm("acancel")}</div>` : ""}</div>`;
@@ -843,7 +843,7 @@ function renderDetail(s, owner, confBy, delBy, createdBy, pickBy) {
         <div class="hint">${esc(t("signature_hint"))}</div></div></div>
       <button class="btn btn-ok btn-lg btn-block" type="submit" id="deliver-btn">✓ ${esc(t("btn_delivered", { date: itDate(d), time: h }))}</button></form>
       <div class="actions" style="margin-top:12px">
-        ${r === "admin" || s.picked_up_by === state.user.uid ? `<button class="btn btn-ghost" id="undo-pick" type="button">↩ ${esc(t("undo_pickup"))}</button>` : ""}
+        ${r === "admin" ? `<button class="btn btn-ghost" id="undo-pick" type="button">↩ ${esc(t("undo_pickup"))}</button>` : ""}
         ${r === "admin" ? cancelForm("acancel") : ""}</div></div>`;
   }
   const qrButtons = hasLabel(s)
@@ -856,7 +856,8 @@ function renderDetail(s, owner, confBy, delBy, createdBy, pickBy) {
   const tel = (n) => `<a href="tel:${esc(n)}">${esc(n)}</a>`;
   const kv = (k, v) => `<dt>${esc(t(k))}</dt><dd>${v}</dd>`;
   render(`<div class="page-head"><div><div class="muted small">${esc(t("shipment"))}</div><h1 class="code">${esc(s.code)}</h1></div>
-    <div class="actions">${editButton}${qrButtons}</div></div>
+    <div class="actions">${r === "admin" ? `<button class="btn ${s.external_courier ? "btn-external" : "btn-ghost"}" id="ext" type="button">${s.external_courier ? `🛵 ${esc(s.external_courier)}` : esc(t("assign_external_long"))}</button>`
+      : staff ? externalBadge(s) : ""}${editButton}${qrButtons}</div></div>
     <div class="status-banner ${s.status}"><div><strong>${esc(t("status_" + s.status))}</strong> — ${esc(banner)}</div>
     ${r === "cliente" && s.status === "in_attesa" ? `<button class="btn btn-danger" id="ccancel">${esc(t("cancel_booking"))}</button>` : ""}
     ${canUndo ? `<button class="btn btn-ghost" id="undo">↩ ${esc(t("undo_delivery"))}</button>` : ""}</div>
@@ -916,6 +917,14 @@ function renderDetail(s, owner, confBy, delBy, createdBy, pickBy) {
     }
   });
   on("picked", "onclick", (e) => markPickedUp(s.code, e.target));
+  on("ext", "onclick", async () => {
+    try {
+      const name = await assignExternal(s.code, s.external_courier);
+      if (name === null) return;
+      flash(name ? t("flash_assigned", { code: s.code, name }) : t("flash_unassigned", { code: s.code }));
+      route();
+    } catch (ex) { console.error(ex); flash(t("err_generic"), "error"); route(); }
+  });
   on("undo-pick", "onclick", () => {
     if (confirm(t("confirm_undo_pickup"))) {
       act({ status: "confermata", picked_up_at: null, picked_up_by: null }, t("flash_undo_pickup", { code: s.code }));
@@ -1053,6 +1062,18 @@ async function viewLabel(code) {
 
 // ------------------------------------------------------------------ admin
 
+// Corriere esterno: badge con lo scooter e affidamento (solo admin). Nome libero; vuoto = nessun affidamento.
+const externalBadge = (s) => (s.external_courier ? `<span class="badge badge-external">🛵 ${esc(s.external_courier)}</span>` : "");
+async function assignExternal(code, current) {
+  const answer = window.prompt(t("assign_prompt"), current || "");
+  if (answer === null) return null;
+  const name = answer.trim().slice(0, 100);
+  await updateDoc(doc(db, "shipments", code), {
+    external_courier: name || null, external_assigned_at: nowStr(), external_assigned_by: state.user.uid,
+  });
+  return name;
+}
+
 function viewAdmin(_, params) {
   const status = params.get("stato") || "tutte";
   const q0 = params.get("q") || "";
@@ -1126,13 +1147,20 @@ function viewAdmin(_, params) {
     const th = (key, label) => `<th><a class="th-sort ${sortKey === key ? "on" : ""}" href="${adminLink({ ordina: key, dir: sortKey === key && !desc ? "desc" : "asc" })}">${esc(t(label))}<span>${sortKey === key ? (desc ? " ▼" : " ▲") : " ↕"}</span></a></th>`;
     el.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr>${th("codice", "code")}${th("ritiro", "pickup")}${th("mittente", "sender")}
       ${th("destinazione", "destination")}${th("consegna", "delivery")}${th("stato", "status")}</tr></thead><tbody>${rows.map((s) => `
-      <tr class="rowlink" data-href="#/spedizione/${esc(s.code)}"><td class="code">${esc(s.code)}</td>
+      <tr class="rowlink ${s.external_courier ? "row-external" : ""}" data-href="#/spedizione/${esc(s.code)}"><td class="code">${esc(s.code)}</td>
       <td><strong>${itDate(s.pickup_date)} ${esc(s.pickup_time)}</strong><br><span class="muted small">${esc(s.pickup_citta)}</span></td>
       <td>${esc(senderName(s))}<br><span class="muted small ltr">${esc(s.mitt_telefono || "")}</span></td>
       <td>${esc(s.dest_nome)}<br><span class="muted small">${esc(s.dest_citta)}</span></td>
-      <td>${s.delivered_at ? `<strong>${itDate(s.delivered_at)} ${hm(s.delivered_at)}</strong>` : '<span class="muted">—</span>'}</td><td>${badge(s.status)}</td></tr>`).join("")}</tbody></table></div>`
+      <td>${s.delivered_at ? `<strong>${itDate(s.delivered_at)} ${hm(s.delivered_at)}</strong>` : '<span class="muted">—</span>'}</td><td>${badge(s.status)}
+        <br><button class="ext-btn ${s.external_courier ? "on" : ""}" type="button" data-code="${esc(s.code)}" data-name="${esc(s.external_courier || "")}" title="${esc(t("assign_external_long"))}">${s.external_courier ? `🛵 ${esc(s.external_courier)}` : esc(t("assign_external"))}</button></td></tr>`).join("")}</tbody></table></div>`
       : `<div class="empty">${esc(t("no_results"))}</div>`;
     bindRowLinks(el);
+    el.querySelectorAll(".ext-btn").forEach((b) => {
+      b.onclick = (e) => {
+        e.stopPropagation();
+        assignExternal(b.dataset.code, b.dataset.name).catch(() => { flash(t("err_generic"), "error"); route(); });
+      };
+    });
   }, denied));
 }
 
@@ -1212,10 +1240,10 @@ function viewWorklist(kind) {
     el.innerHTML = `<div class="page-head" style="margin-bottom:8px"><h2 style="margin:0">${esc(t(pickup ? "to_pickup" : "to_deliver"))} (${todo.length})</h2>
         ${todo.length > 1 ? `<button class="btn btn-ghost small" id="reset-route">${esc(t("reset_route"))}</button>` : ""}</div>
       ${todo.length > 1 ? `<p class="small muted">${esc(t("route_hint"))}</p>` : ""}
-      ${todo.map((s, i) => `<div class="card route-card">
+      ${todo.map((s, i) => `<div class="card route-card ${s.external_courier ? "row-external" : ""}">
         <div class="route-num">${i + 1}</div>
         <div class="route-body"><a class="route-link" href="#/spedizione/${esc(s.code)}">
-          <div class="page-head" style="margin-bottom:6px"><span class="code">${esc(s.code)}</span><span class="badge badge-${s.status}">${esc(t("pickup"))} ${itDate(s.pickup_date)} ${esc(s.pickup_time)}</span></div>
+          <div class="page-head" style="margin-bottom:6px"><span class="code">${esc(s.code)} ${externalBadge(s)}</span><span class="badge badge-${s.status}">${esc(t("pickup"))} ${itDate(s.pickup_date)} ${esc(s.pickup_time)}</span></div>
           <div class="small"><strong>${esc(t("pickup"))}:</strong> ${esc(senderName(s))} — ${esc(addr("pickup", s))}</div>
           <div class="small"><strong>${esc(t("destination"))}:</strong> ${esc(s.dest_nome)} — ${esc(addr("dest", s))}</div></a>
           ${pickup ? `<button class="btn btn-gold small pick" style="margin-top:10px" data-code="${esc(s.code)}">${esc(t("btn_picked"))}</button>` : ""}</div>

@@ -270,7 +270,13 @@ export const TR = {
   "nothing_to_pickup": "Καμία αποστολή προς παραλαβή.",
   "pickups_intro": "Επιβεβαιωμένες αποστολές προς παραλαβή. Πατήστε «Παραλήφθηκε» όταν έχετε το δέμα: περνάει στις Παραδόσεις.",
   "banner_picked": "Το δέμα παραλήφθηκε και είναι καθ' οδόν για παράδοση.",
-  "tl_picked": "Παραλαβή"
+  "tl_picked": "Παραλαβή",
+  "assign_external": "🛵 Ανάθεση",
+  "assign_external_long": "🛵 Ανάθεση σε εξωτερικό κούριερ",
+  "assign_prompt": "Όνομα του εξωτερικού κούριερ (αφήστε κενό για αφαίρεση της ανάθεσης):",
+  "external_courier": "Εξωτερικός κούριερ",
+  "flash_assigned": "Η αποστολή {code} ανατέθηκε σε {name}.",
+  "flash_unassigned": "Η ανάθεση της {code} αφαιρέθηκε."
  },
  "en": {
   "app_title": "Shipment booking",
@@ -539,7 +545,13 @@ export const TR = {
   "nothing_to_pickup": "No shipments to pick up.",
   "pickups_intro": "Confirmed shipments to pick up. Tap “Picked up” when you have the parcel: it moves to Deliveries.",
   "banner_picked": "The parcel has been picked up and is on its way.",
-  "tl_picked": "Picked up"
+  "tl_picked": "Picked up",
+  "assign_external": "🛵 Assign",
+  "assign_external_long": "🛵 Assign to external courier",
+  "assign_prompt": "External courier name (leave empty to remove the assignment):",
+  "external_courier": "External courier",
+  "flash_assigned": "Shipment {code} assigned to {name}.",
+  "flash_unassigned": "Assignment removed from {code}."
  },
  "it": {
   "app_title": "Prenotazione spedizioni",
@@ -808,7 +820,13 @@ export const TR = {
   "nothing_to_pickup": "Nessuna spedizione da ricevere.",
   "pickups_intro": "Spedizioni confermate da ricevere. Premi «Ricevuta» quando hai il pacco: passa nelle Consegne.",
   "banner_picked": "Il pacco è stato ritirato ed è in consegna.",
-  "tl_picked": "Ricevuta"
+  "tl_picked": "Ricevuta",
+  "assign_external": "🛵 Affida",
+  "assign_external_long": "🛵 Affida a corriere esterno",
+  "assign_prompt": "Nome del corriere esterno (lascia vuoto per togliere l'affidamento):",
+  "external_courier": "Corriere esterno",
+  "flash_assigned": "Spedizione {code} affidata a {name}.",
+  "flash_unassigned": "Affidamento rimosso per {code}."
  },
  "fr": {
   "app_title": "Réservation d'envois",
@@ -1077,7 +1095,13 @@ export const TR = {
   "nothing_to_pickup": "Aucun envoi à enlever.",
   "pickups_intro": "Envois confirmés à enlever. Touchez « Enlevé » quand vous avez le colis : il passe dans les Livraisons.",
   "banner_picked": "Le colis a été enlevé et est en cours de livraison.",
-  "tl_picked": "Enlevé"
+  "tl_picked": "Enlevé",
+  "assign_external": "🛵 Confier",
+  "assign_external_long": "🛵 Confier à un coursier externe",
+  "assign_prompt": "Nom du coursier externe (laisser vide pour retirer l'affectation) :",
+  "external_courier": "Coursier externe",
+  "flash_assigned": "Envoi {code} confié à {name}.",
+  "flash_unassigned": "Affectation retirée pour {code}."
  },
  "he": {
   "app_title": "הזמנת משלוחים",
@@ -1346,7 +1370,13 @@ export const TR = {
   "nothing_to_pickup": "אין משלוחים לאיסוף.",
   "pickups_intro": "משלוחים מאושרים לאיסוף. הקישו „נאסף” כשהחבילה אצלכם: היא עוברת למסירות.",
   "banner_picked": "החבילה נאספה ונמצאת בדרך למסירה.",
-  "tl_picked": "נאסף"
+  "tl_picked": "נאסף",
+  "assign_external": "🛵 הקצאה",
+  "assign_external_long": "🛵 הקצאה לשליח חיצוני",
+  "assign_prompt": "שם השליח החיצוני (השאירו ריק כדי להסיר את ההקצאה):",
+  "external_courier": "שליח חיצוני",
+  "flash_assigned": "המשלוח {code} הוקצה ל-{name}.",
+  "flash_unassigned": "ההקצאה של {code} הוסרה."
  },
  "es": {
   "app_title": "Reserva de envíos",
@@ -1615,7 +1645,13 @@ export const TR = {
   "nothing_to_pickup": "No hay envíos por recoger.",
   "pickups_intro": "Envíos confirmados por recoger. Pulsa «Recogido» cuando tengas el paquete: pasa a Entregas.",
   "banner_picked": "El paquete ha sido recogido y está en camino.",
-  "tl_picked": "Recogido"
+  "tl_picked": "Recogido",
+  "assign_external": "🛵 Asignar",
+  "assign_external_long": "🛵 Asignar a mensajero externo",
+  "assign_prompt": "Nombre del mensajero externo (deja vacío para quitar la asignación):",
+  "external_courier": "Mensajero externo",
+  "flash_assigned": "Envío {code} asignado a {name}.",
+  "flash_unassigned": "Asignación quitada de {code}."
  },
  "de": {
   "app_title": "Sendungsbuchung",
@@ -1884,7 +1920,13 @@ export const TR = {
   "nothing_to_pickup": "Keine Sendungen abzuholen.",
   "pickups_intro": "Bestätigte Sendungen zum Abholen. Tippen Sie auf „Abgeholt“, wenn Sie das Paket haben: es wechselt zu den Zustellungen.",
   "banner_picked": "Das Paket wurde abgeholt und ist unterwegs.",
-  "tl_picked": "Abgeholt"
+  "tl_picked": "Abgeholt",
+  "assign_external": "🛵 Zuweisen",
+  "assign_external_long": "🛵 Externem Kurier zuweisen",
+  "assign_prompt": "Name des externen Kuriers (leer lassen, um die Zuweisung zu entfernen):",
+  "external_courier": "Externer Kurier",
+  "flash_assigned": "Sendung {code} an {name} zugewiesen.",
+  "flash_unassigned": "Zuweisung für {code} entfernt."
  },
  "ru": {
   "app_title": "Бронирование отправлений",
@@ -2153,7 +2195,13 @@ export const TR = {
   "nothing_to_pickup": "Нет отправлений к забору.",
   "pickups_intro": "Подтверждённые отправления к забору. Нажмите «Забрано», когда посылка у вас: она перейдёт в доставки.",
   "banner_picked": "Посылка забрана и находится в доставке.",
-  "tl_picked": "Забрано"
+  "tl_picked": "Забрано",
+  "assign_external": "🛵 Передать",
+  "assign_external_long": "🛵 Передать внешнему курьеру",
+  "assign_prompt": "Имя внешнего курьера (оставьте пустым, чтобы снять назначение):",
+  "external_courier": "Внешний курьер",
+  "flash_assigned": "Отправление {code} передано: {name}.",
+  "flash_unassigned": "Назначение {code} снято."
  },
  "zh": {
   "app_title": "快递预约",
@@ -2422,6 +2470,12 @@ export const TR = {
   "nothing_to_pickup": "暂无待取件快递。",
   "pickups_intro": "待取件的已确认快递。拿到包裹后点击“已取件”，即移至派送。",
   "banner_picked": "包裹已取件，正在派送中。",
-  "tl_picked": "已取件"
+  "tl_picked": "已取件",
+  "assign_external": "🛵 委派",
+  "assign_external_long": "🛵 委派给外部快递员",
+  "assign_prompt": "外部快递员姓名（留空则取消委派）：",
+  "external_courier": "外部快递员",
+  "flash_assigned": "快递 {code} 已委派给 {name}。",
+  "flash_unassigned": "已取消 {code} 的委派。"
  }
 };

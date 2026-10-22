@@ -124,14 +124,19 @@ service cloud.firestore {
         || (isAdmin() && resource.data.status in ['in_attesa', 'confermata', 'ritirata']
           && request.resource.data.status == 'annullata'
           && onlyChanged(['status', 'cancelled_at', 'cancel_reason']))
-        // admin o corriere ricevono il pacco dal mittente ("Ricevuta")
-        || (isStaff() && resource.data.status == 'confermata'
+        // l'admin affida (o toglie) la spedizione a un corriere esterno, in qualsiasi stato
+        || (isAdmin()
+          && request.resource.data.external_assigned_by == request.auth.uid
+          && (request.resource.data.external_courier == null
+              || (request.resource.data.external_courier is string && request.resource.data.external_courier.size() <= 100))
+          && onlyChanged(['external_courier', 'external_assigned_at', 'external_assigned_by']))
+        // l'admin riceve il pacco dal mittente ("Ricevuta")
+        || (isAdmin() && resource.data.status == 'confermata'
           && request.resource.data.status == 'ritirata'
           && request.resource.data.picked_up_by == request.auth.uid
           && onlyChanged(['status', 'picked_up_at', 'picked_up_by']))
-        // ricezione premuta per errore: la annulla un admin o chi l'ha registrata
-        || (isStaff() && resource.data.status == 'ritirata'
-          && (isAdmin() || resource.data.get('picked_up_by', null) == request.auth.uid)
+        // ricezione premuta per errore: la annulla un admin
+        || (isAdmin() && resource.data.status == 'ritirata'
           && request.resource.data.status == 'confermata'
           && request.resource.data.picked_up_at == null
           && request.resource.data.picked_up_by == null

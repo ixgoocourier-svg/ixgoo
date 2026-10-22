@@ -17,7 +17,9 @@ spagnolo, tedesco, russo e cinese.
    **Nuova spedizione**): nasce già confermato, con l'etichetta QR subito stampabile.
 4. Nell'area del cliente compare subito il QR code con l'etichetta da stampare e attaccare al pacco.
    La spedizione confermata è nella pagina **Ricevute** (da ricevere dal mittente): quando si ha il
-   pacco si preme **📦 Ricevuta** e passa nella pagina **Consegne** (da consegnare).
+   pacco l'admin preme **📦 Ricevuta** e passa nella pagina **Consegne** (da consegnare).
+   L'admin può affidare un ordine a un **corriere esterno** (🛵 Affida nella lista Ordini o nella
+   scheda): la riga si colora e mostra il badge 🛵 con il nome.
 5. Il corriere scansiona il QR (si apre la spedizione, dopo il login) e preme
    **"Consegna effettuata il giorno … alle ore …"**. Il cliente vede la consegna nella sua area.
    Prima di registrarla l'app chiede conferma; una consegna registrata per errore si annulla con

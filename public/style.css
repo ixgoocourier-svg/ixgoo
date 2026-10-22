@@ -331,3 +331,13 @@ footer a { color: var(--muted); }
 .status-banner.ritirata { background: #efe6fb; color: #3f2766; }
 .pick-box { border: 2px solid var(--gold); background: #fffaf0; }
 .route-link { text-decoration: none; color: inherit; display: block; }
+
+/* ordini affidati a un corriere esterno */
+.badge-external { background: #dff3f1; color: #0f5c55; border: 1px solid #9fd8d1; }
+tr.row-external td { background: #effaf8; }
+tr.row-external:hover td { background: #e2f5f2; }
+.route-card.row-external { background: #effaf8; border-color: #9fd8d1; }
+.ext-btn { margin-top: 6px; font: inherit; font-size: .78rem; padding: 3px 9px; border-radius: 999px; cursor: pointer;
+  border: 1px dashed #b9b4aa; background: #fff; color: var(--muted); white-space: nowrap; }
+.ext-btn.on { border: 1px solid #9fd8d1; background: #dff3f1; color: #0f5c55; font-weight: 700; }
+.btn-external { background: #dff3f1; border-color: #9fd8d1; color: #0f5c55; }
