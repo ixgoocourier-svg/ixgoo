@@ -517,17 +517,33 @@ const SHIP_FIELDS = ["mitt_ragione_sociale", "mitt_nome", "mitt_cognome", "mitt_
 // nessun campo obbligatorio: il cliente inserisce i dati che vuole (tipo e colli hanno un valore predefinito)
 const SHIP_REQUIRED = [];
 
-function notifyAdmins(s, edited = false) {
+// Avviso ntfy agli admin. Due tentativi: fetch (JSON) e, se fallisce, sendBeacon verso l'URL del canale
+// con i parametri nell'indirizzo (il browser lo completa anche se la pagina cambia o si chiude).
+// Restituisce l'esito, che viene annotato sull'ordine per capire eventuali blocchi sul dispositivo del cliente.
+async function notifyAdmins(s, edited = false) {
+  const title = edited ? "IxGoo · Αλλαγή παραγγελίας / Ordine modificato" : "IxGoo · Νέα παραγγελία / Nuovo ordine";
   const message = `${s.code}\n${itDate(s.pickup_date) || "—"} ${s.pickup_time || ""} · ${s.pickup_citta || "—"} → ${s.dest_citta || "—"}\n`
     + `${TR.el["type_" + s.tipo]} / ${TR.it["type_" + s.tipo]} × ${s.colli}`;
-  // invio "a fondo perduto": se ntfy non risponde la prenotazione resta comunque salvata
-  fetch("https://ntfy.sh/", {
-    method: "POST",
-    body: JSON.stringify({
-      topic: NTFY_TOPIC, title: edited ? "IxGoo · Αλλαγή παραγγελίας / Ordine modificato" : "IxGoo · Νέα παραγγελία / Nuovo ordine", message,
-      tags: ["package"], priority: 4, click: `${location.origin}/#/spedizione/${encodeURIComponent(s.code)}`,
-    }),
-  }).catch(() => {});
+  const click = `${location.origin}/#/spedizione/${encodeURIComponent(s.code)}`;
+  let firstError = "";
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 8000);
+    const r = await fetch("https://ntfy.sh/", {
+      method: "POST", signal: ctrl.signal, keepalive: true,
+      body: JSON.stringify({ topic: NTFY_TOPIC, title, message, tags: ["package"], priority: 4, click }),
+    });
+    clearTimeout(timer);
+    if (r.ok) return "ok";
+    firstError = `http ${r.status}`;
+  } catch (e) {
+    firstError = String((e && e.name) || e).slice(0, 60);
+  }
+  try {
+    const url = `https://ntfy.sh/${NTFY_TOPIC}?` + new URLSearchParams({ title, tags: "package", priority: "4", click });
+    if (navigator.sendBeacon && navigator.sendBeacon(url, new Blob([message], { type: "text/plain" }))) return `beacon (${firstError})`;
+  } catch (e) { /* ignorato */ }
+  return `errore: ${firstError}`;
 }
 
 function newCode() {
@@ -767,7 +783,11 @@ function viewNew(_, __, f, errors = {}, edit = null) {
       try {
         // se il codice esistesse già, la scrittura diventerebbe una modifica e le regole la rifiutano
         await setDoc(doc(db, "shipments", code), { ...data, code });
-        if (!byAdmin) notifyAdmins({ ...data, code });
+        if (!byAdmin) {
+          notifyAdmins({ ...data, code })
+            .then((alert) => updateDoc(doc(db, "shipments", code), { alert: `${alert} · ${nowStr().slice(11, 16)}`.slice(0, 200) }))
+            .catch(() => {});
+        }
         flash(t(byAdmin ? "flash_admin_created" : "flash_shipment_sent", { code }));
         return go(`#/spedizione/${code}`);
       } catch (ex) {
@@ -874,7 +894,8 @@ function renderDetail(s, owner, confBy, delBy, createdBy, pickBy) {
         ${kv("type", esc(t("type_" + s.tipo)))}${kv("parcels", esc(s.colli))}
         ${s.peso ? kv("weight", esc(s.peso)) : ""}${s.note ? kv("notes", esc(s.note)) : ""}
         ${staff && owner ? kv("customer", esc(`${owner.ragione_sociale || fullName(owner)} · ${owner.email}`)) : ""}
-        ${staff && !s.user_id ? kv("customer", esc(t("manual_order", { name: fullName(createdBy) || "—" }))) : ""}</dl></section>
+        ${staff && !s.user_id ? kv("customer", esc(t("manual_order", { name: fullName(createdBy) || "—" }))) : ""}
+        ${r === "admin" && s.alert ? `<dt>ntfy</dt><dd class="small muted">${esc(s.alert)}</dd>` : ""}</dl></section>
       ${s.status === "consegnata" && (s.received_by || s.signature) ? `<section class="card pod"><h2>${esc(t("proof_of_delivery"))}</h2>
         ${s.received_by ? `<dl class="kv">${kv("received_by", `<strong>${esc(s.received_by)}</strong>`)}${kv("tl_delivered", `${itDate(s.delivered_at)} ${hm(s.delivered_at)}`)}</dl>` : ""}
         ${typeof s.signature === "string" && s.signature.startsWith("data:image/png;base64,") ? `<img class="sig-img" src="${esc(s.signature)}" alt="${esc(t("signature"))}">` : ""}</section>` : ""}
