@@ -21,6 +21,8 @@ const db = getFirestore(fb);
 // in_attesa → confermata (admin) → ritirata ("Ricevuta": pacco preso dal mittente) → consegnata; annullata
 const STATUS = ["in_attesa", "confermata", "ritirata", "consegnata", "annullata"];
 // stati in cui esiste l'etichetta con QR
+// spedizioni create dai test automatici (campo is_test): ignorate ovunque nell'app
+const realDocs = (snap) => snap.docs.map((d) => d.data()).filter((s) => !s.is_test);
 const hasLabel = (s) => ["confermata", "ritirata", "consegnata"].includes(s.status);
 // questi indirizzi diventano admin alla registrazione (stessa lista in firestore.rules)
 const ADMIN_EMAILS = ["ixgoo@outlook.com.gr", "pierpaolomurgioni@gmail.com", "ixgoocourier@gmail.com"];
@@ -200,11 +202,11 @@ function startAdminWatch() {
   adminWatch = onSnapshot(query(collection(db, "shipments"), where("status", "==", "in_attesa")), (snap) => {
     if (knownPending) {
       snap.docChanges().forEach((ch) => {
-        if (ch.type === "added" && !knownPending.has(ch.doc.id)) newOrderAlert(ch.doc.data());
+        if (ch.type === "added" && !knownPending.has(ch.doc.id) && !ch.doc.data().is_test) newOrderAlert(ch.doc.data());
       });
     }
     knownPending = new Set(snap.docs.map((d) => d.id));
-    state.pending = snap.size;
+    state.pending = realDocs(snap).length;
     renderHeader();
   }, () => {});
 }
@@ -489,7 +491,7 @@ function viewClient() {
   const q = query(collection(db, "shipments"), where("user_id", "==", state.user.uid));
   unsubs.push(onSnapshot(q, (snap) => {
     allowed();
-    const rows = snap.docs.map((d) => d.data()).sort(byPickup);
+    const rows = realDocs(snap).sort(byPickup);
     const el = document.getElementById("list");
     if (!el) return;
     el.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr><th>${esc(t("code"))}</th><th>${esc(t("pickup"))}</th>
@@ -608,7 +610,7 @@ async function loadRecentRecipients(form) {
   try {
     const q = role() === "admin" ? collection(db, "shipments")
       : query(collection(db, "shipments"), where("user_id", "==", state.user.uid));
-    docs = (await getDocs(q)).docs.map((d) => d.data());
+    docs = realDocs(await getDocs(q));
   } catch (e) { return; }
   const seen = new Set();
   const list = [];
@@ -652,7 +654,7 @@ async function loadClientDirectory(form) {
     const manual = await getDocs(query(collection(db, "shipments"), where("user_id", "==", null)));
     const seen = new Set();
     // dal più recente: per ogni cliente non registrato si tengono i dati dell'ultimo ordine
-    for (const s of manual.docs.map((d) => d.data()).sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""))) {
+    for (const s of realDocs(manual).sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""))) {
       const name = senderName(s);
       if (name === "—" || seen.has(name.trim().toLowerCase())) continue;
       seen.add(name.trim().toLowerCase());
@@ -783,7 +785,7 @@ function viewNew(_, __, f, errors = {}, edit = null) {
       try {
         // se il codice esistesse già, la scrittura diventerebbe una modifica e le regole la rifiutano
         await setDoc(doc(db, "shipments", code), { ...data, code });
-        if (!byAdmin) {
+        {
           notifyAdmins({ ...data, code })
             .then((alert) => updateDoc(doc(db, "shipments", code), { alert: `${alert} · ${nowStr().slice(11, 16)}`.slice(0, 200) }))
             .catch(() => {});
@@ -1141,7 +1143,7 @@ function viewAdmin(_, params) {
   unsubs.push(onSnapshot(collection(db, "shipments"), (snap) => {
     allowed();
     const dayOf = (s) => s.pickup_date || (s.created_at || "").slice(0, 10);
-    const all = snap.docs.map((d) => d.data()).filter((s) => !from || (dayOf(s) >= from && dayOf(s) <= to));
+    const all = realDocs(snap).filter((s) => !from || (dayOf(s) >= from && dayOf(s) <= to));
     const counts = Object.fromEntries(STATUS.map((st) => [st, all.filter((s) => s.status === st).length]));
     document.getElementById("tabs").innerHTML = `<a href="${adminLink({ stato: "tutte" })}" class="${STATUS.includes(status) ? "" : "active"}">${esc(t("all"))}<span class="count">${all.length}</span></a>`
       + STATUS.map((st) => `<a href="${adminLink({ stato: st })}" class="${status === st ? "active" : ""}">${esc(t("status_" + st))}<span class="count">${counts[st]}</span></a>`).join("");
@@ -1298,7 +1300,7 @@ function viewWorklist(kind) {
   }, () => { route = []; draw(); }));
   unsubs.push(onSnapshot(collection(db, "shipments"), (snap) => {
     allowed();
-    all = snap.docs.map((d) => d.data());
+    all = realDocs(snap);
     draw();
   }, denied));
 }
@@ -1329,7 +1331,7 @@ async function exportMyData() {
   let shipments = [];
   try {
     const snap = await getDocs(query(collection(db, "shipments"), where("user_id", "==", uid)));
-    shipments = snap.docs.map((d) => d.data()).sort(byPickup);
+    shipments = realDocs(snap).sort(byPickup);
   } catch (e) { /* lo staff potrebbe non avere spedizioni proprie */ }
   const data = {
     exported_at: nowStr(), service: "IxGoo Courier & Logistics",

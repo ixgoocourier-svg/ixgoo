@@ -124,8 +124,8 @@ service cloud.firestore {
         || (isAdmin() && resource.data.status in ['in_attesa', 'confermata', 'ritirata']
           && request.resource.data.status == 'annullata'
           && onlyChanged(['status', 'cancelled_at', 'cancel_reason']))
-        // il cliente annota l'esito dell'avviso agli admin sul proprio ordine (solo diagnosi)
-        || (verified() && resource.data.user_id == request.auth.uid
+        // il cliente (o l'admin che l'ha inserito) annota l'esito dell'avviso agli admin (solo diagnosi)
+        || (((verified() && resource.data.user_id == request.auth.uid) || isAdmin())
           && request.resource.data.alert is string && request.resource.data.alert.size() <= 200
           && onlyChanged(['alert']))
         // l'admin affida (o toglie) la spedizione a un corriere esterno, in qualsiasi stato
