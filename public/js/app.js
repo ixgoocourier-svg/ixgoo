@@ -487,17 +487,38 @@ function viewVerify() {
 
 // ------------------------------------------------------------------ cliente
 
-function viewClient() {
+function viewClient(_, params = new URLSearchParams()) {
   render(`<div class="page-head"><h1>${esc(t("nav_my_shipments"))}</h1><a class="btn btn-gold" href="#/nuova">+ ${esc(t("nav_new_shipment"))}</a></div>
     <div class="card" style="padding:8px 0" id="list"><div class="empty">${esc(t("loading"))}</div></div>`, t("nav_my_shipments"));
+  // ordinamento cliccando sulle intestazioni; senza scelta: le spedizioni più recenti (per invio) in alto
+  const SORTS = ["codice", "ritiro", "destinazione", "stato"];
+  const sortKey = SORTS.includes(params.get("ordina")) ? params.get("ordina") : "";
+  const desc = sortKey ? params.get("dir") === "desc" : true;
+  const link = (key) => `#/area-cliente?ordina=${key}&dir=${sortKey === key && !desc ? "desc" : "asc"}`;
+  const th = (key, label) => `<th><a class="th-sort ${sortKey === key ? "on" : ""}" href="${link(key)}">${esc(t(label))}<span>${sortKey === key ? (desc ? " ▼" : " ▲") : " ↕"}</span></a></th>`;
   const q = query(collection(db, "shipments"), where("user_id", "==", state.user.uid));
   unsubs.push(onSnapshot(q, (snap) => {
     allowed();
-    const rows = realDocs(snap).sort(byPickup);
+    let rows = realDocs(snap);
+    if (!sortKey) {
+      rows.sort((a, b) => sentMillis(b) - sentMillis(a));
+    } else {
+      const collator = new Intl.Collator(lang(), { sensitivity: "base", numeric: true });
+      const value = {
+        codice: (s) => s.code,
+        ritiro: (s) => (s.pickup_date ? `${s.pickup_date} ${s.pickup_time || ""}` : ""),
+        destinazione: (s) => s.dest_nome || s.dest_citta || "",
+        stato: (s) => String(STATUS.indexOf(s.status)),
+      }[sortKey];
+      const cmp = sortKey === "codice" ? (x, y) => (x < y ? -1 : x > y ? 1 : 0) : collator.compare;
+      const withValue = rows.filter((s) => value(s)).sort((a, b) => cmp(value(a), value(b)) || (sentMillis(b) - sentMillis(a)));
+      if (desc) withValue.reverse();
+      rows = withValue.concat(rows.filter((s) => !value(s)));
+    }
     const el = document.getElementById("list");
     if (!el) return;
-    el.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr><th>${esc(t("code"))}</th><th>${esc(t("pickup"))}</th>
-      <th>${esc(t("destination"))}</th><th>${esc(t("status"))}</th><th></th></tr></thead><tbody>${rows.map((s) => `
+    el.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr>${th("codice", "code")}${th("ritiro", "pickup")}
+      ${th("destinazione", "destination")}${th("stato", "status")}<th></th></tr></thead><tbody>${rows.map((s) => `
       <tr class="rowlink" data-href="#/spedizione/${esc(s.code)}"><td class="code">${esc(s.code)}</td>
       <td>${itDate(s.pickup_date)} ${esc(s.pickup_time)}<br><span class="muted small">${esc(s.pickup_citta)}</span></td>
       <td>${esc(s.dest_nome)}<br><span class="muted small">${esc(s.dest_citta)}</span></td><td>${badge(s.status)}</td>
