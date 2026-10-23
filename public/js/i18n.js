@@ -276,7 +276,9 @@ export const TR = {
   "assign_prompt": "Όνομα του εξωτερικού κούριερ (αφήστε κενό για αφαίρεση της ανάθεσης):",
   "external_courier": "Εξωτερικός κούριερ",
   "flash_assigned": "Η αποστολή {code} ανατέθηκε σε {name}.",
-  "flash_unassigned": "Η ανάθεση της {code} αφαιρέθηκε."
+  "flash_unassigned": "Η ανάθεση της {code} αφαιρέθηκε.",
+  "order_no": "Α/Α",
+  "order_no_hint": "Α/Α παραγγελίας της ημέρας {date}"
  },
  "en": {
   "app_title": "Shipment booking",
@@ -551,7 +553,9 @@ export const TR = {
   "assign_prompt": "External courier name (leave empty to remove the assignment):",
   "external_courier": "External courier",
   "flash_assigned": "Shipment {code} assigned to {name}.",
-  "flash_unassigned": "Assignment removed from {code}."
+  "flash_unassigned": "Assignment removed from {code}.",
+  "order_no": "No.",
+  "order_no_hint": "Order no. of the day {date}"
  },
  "it": {
   "app_title": "Prenotazione spedizioni",
@@ -826,7 +830,9 @@ export const TR = {
   "assign_prompt": "Nome del corriere esterno (lascia vuoto per togliere l'affidamento):",
   "external_courier": "Corriere esterno",
   "flash_assigned": "Spedizione {code} affidata a {name}.",
-  "flash_unassigned": "Affidamento rimosso per {code}."
+  "flash_unassigned": "Affidamento rimosso per {code}.",
+  "order_no": "N°",
+  "order_no_hint": "Numero dell'ordine del giorno {date}"
  },
  "fr": {
   "app_title": "Réservation d'envois",
@@ -1101,7 +1107,9 @@ export const TR = {
   "assign_prompt": "Nom du coursier externe (laisser vide pour retirer l'affectation) :",
   "external_courier": "Coursier externe",
   "flash_assigned": "Envoi {code} confié à {name}.",
-  "flash_unassigned": "Affectation retirée pour {code}."
+  "flash_unassigned": "Affectation retirée pour {code}.",
+  "order_no": "N°",
+  "order_no_hint": "N° de commande du jour {date}"
  },
  "he": {
   "app_title": "הזמנת משלוחים",
@@ -1376,7 +1384,9 @@ export const TR = {
   "assign_prompt": "שם השליח החיצוני (השאירו ריק כדי להסיר את ההקצאה):",
   "external_courier": "שליח חיצוני",
   "flash_assigned": "המשלוח {code} הוקצה ל-{name}.",
-  "flash_unassigned": "ההקצאה של {code} הוסרה."
+  "flash_unassigned": "ההקצאה של {code} הוסרה.",
+  "order_no": "מס׳",
+  "order_no_hint": "מספר ההזמנה ביום {date}"
  },
  "es": {
   "app_title": "Reserva de envíos",
@@ -1651,7 +1661,9 @@ export const TR = {
   "assign_prompt": "Nombre del mensajero externo (deja vacío para quitar la asignación):",
   "external_courier": "Mensajero externo",
   "flash_assigned": "Envío {code} asignado a {name}.",
-  "flash_unassigned": "Asignación quitada de {code}."
+  "flash_unassigned": "Asignación quitada de {code}.",
+  "order_no": "N.º",
+  "order_no_hint": "N.º de pedido del día {date}"
  },
  "de": {
   "app_title": "Sendungsbuchung",
@@ -1926,7 +1938,9 @@ export const TR = {
   "assign_prompt": "Name des externen Kuriers (leer lassen, um die Zuweisung zu entfernen):",
   "external_courier": "Externer Kurier",
   "flash_assigned": "Sendung {code} an {name} zugewiesen.",
-  "flash_unassigned": "Zuweisung für {code} entfernt."
+  "flash_unassigned": "Zuweisung für {code} entfernt.",
+  "order_no": "Nr.",
+  "order_no_hint": "Auftragsnummer des Tages {date}"
  },
  "ru": {
   "app_title": "Бронирование отправлений",
@@ -2201,7 +2215,9 @@ export const TR = {
   "assign_prompt": "Имя внешнего курьера (оставьте пустым, чтобы снять назначение):",
   "external_courier": "Внешний курьер",
   "flash_assigned": "Отправление {code} передано: {name}.",
-  "flash_unassigned": "Назначение {code} снято."
+  "flash_unassigned": "Назначение {code} снято.",
+  "order_no": "№",
+  "order_no_hint": "№ заказа за день {date}"
  },
  "zh": {
   "app_title": "快递预约",
@@ -2476,6 +2492,8 @@ export const TR = {
   "assign_prompt": "外部快递员姓名（留空则取消委派）：",
   "external_courier": "外部快递员",
   "flash_assigned": "快递 {code} 已委派给 {name}。",
-  "flash_unassigned": "已取消 {code} 的委派。"
+  "flash_unassigned": "已取消 {code} 的委派。",
+  "order_no": "序号",
+  "order_no_hint": "{date} 当天订单序号"
  }
 };

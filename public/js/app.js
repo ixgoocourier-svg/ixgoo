@@ -1143,6 +1143,16 @@ function viewAdmin(_, params) {
   unsubs.push(onSnapshot(collection(db, "shipments"), (snap) => {
     allowed();
     const dayOf = (s) => s.pickup_date || (s.created_at || "").slice(0, 10);
+    // numero progressivo dell'ordine nel suo giorno di creazione (1, 2, 3… ogni giorno), calcolato su
+    // tutti gli ordini già caricati: non cambia con filtri e ordinamento, nessuna lettura in più
+    const dayNo = new Map();
+    const perDay = new Map();
+    for (const s of realDocs(snap).sort((a, b) => (a.created_at || "").localeCompare(b.created_at || "") || a.code.localeCompare(b.code))) {
+      const day = (s.created_at || "").slice(0, 10);
+      const n = (perDay.get(day) || 0) + 1;
+      perDay.set(day, n);
+      dayNo.set(s.code, n);
+    }
     const all = realDocs(snap).filter((s) => !from || (dayOf(s) >= from && dayOf(s) <= to));
     const counts = Object.fromEntries(STATUS.map((st) => [st, all.filter((s) => s.status === st).length]));
     document.getElementById("tabs").innerHTML = `<a href="${adminLink({ stato: "tutte" })}" class="${STATUS.includes(status) ? "" : "active"}">${esc(t("all"))}<span class="count">${all.length}</span></a>`
@@ -1168,9 +1178,9 @@ function viewAdmin(_, params) {
     rows = withValue.concat(rows.filter((s) => !value(s)).sort(byPickup));
     const el = document.getElementById("list");
     const th = (key, label) => `<th><a class="th-sort ${sortKey === key ? "on" : ""}" href="${adminLink({ ordina: key, dir: sortKey === key && !desc ? "desc" : "asc" })}">${esc(t(label))}<span>${sortKey === key ? (desc ? " ▼" : " ▲") : " ↕"}</span></a></th>`;
-    el.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr>${th("codice", "code")}${th("ritiro", "pickup")}${th("mittente", "sender")}
+    el.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr><th class="col-no">${esc(t("order_no"))}</th>${th("codice", "code")}${th("ritiro", "pickup")}${th("mittente", "sender")}
       ${th("destinazione", "destination")}${th("consegna", "delivery")}${th("stato", "status")}</tr></thead><tbody>${rows.map((s) => `
-      <tr class="rowlink ${s.external_courier ? "row-external" : ""}" data-href="#/spedizione/${esc(s.code)}"><td class="code">${esc(s.code)}</td>
+      <tr class="rowlink ${s.external_courier ? "row-external" : ""}" data-href="#/spedizione/${esc(s.code)}"><td class="col-no" title="${esc(t("order_no_hint", { date: itDate(s.created_at) }))}"><span class="day-no">${dayNo.get(s.code) || ""}</span><span class="day-date">${itDate(s.created_at).slice(0, 5)}</span></td><td class="code">${esc(s.code)}</td>
       <td><strong>${itDate(s.pickup_date)} ${esc(s.pickup_time)}</strong><br><span class="muted small">${esc(s.pickup_citta)}</span></td>
       <td>${esc(senderName(s))}<br><span class="muted small ltr">${esc(s.mitt_telefono || "")}</span></td>
       <td>${esc(s.dest_nome)}<br><span class="muted small">${esc(s.dest_citta)}</span></td>

@@ -341,3 +341,9 @@ tr.row-external:hover td { background: #e2f5f2; }
   border: 1px dashed #b9b4aa; background: #fff; color: var(--muted); white-space: nowrap; }
 .ext-btn.on { border: 1px solid #9fd8d1; background: #dff3f1; color: #0f5c55; font-weight: 700; }
 .btn-external { background: #dff3f1; border-color: #9fd8d1; color: #0f5c55; }
+
+/* numero progressivo dell'ordine nel giorno (lista Ordini) */
+.col-no { width: 1%; text-align: center; white-space: nowrap; }
+.day-no { display: inline-grid; place-items: center; min-width: 28px; height: 28px; padding: 0 6px; border-radius: 999px;
+  background: var(--black); color: var(--gold); font-weight: 700; font-size: .9rem; }
+.day-date { display: block; font-size: .7rem; color: var(--muted); margin-top: 2px; }
