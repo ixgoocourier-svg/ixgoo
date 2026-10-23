@@ -1345,6 +1345,107 @@ async function markPickedUp(code, button) {
 
 // ------------------------------------------------------------------ profilo
 
+// ------------------------------------------------------------------ report attività (admin, nel Profilo)
+// Conta gli eventi nel periodo in cui sono avvenuti: ricevuto (invio), accettato (conferma), ritirato,
+// consegnato, annullato. Periodi: giorno, settimana (da lunedì), mese, 3 mesi, anno; ← → per spostarsi.
+const reportState = { kind: "week", offset: 0 };
+const REP_EVENTS = [["received", "rep_received"], ["accepted", "rep_accepted"], ["picked", "rep_picked"],
+  ["delivered", "rep_delivered"], ["cancelled", "rep_cancelled"]];
+const parseLocal = (v) => (v ? new Date(String(v).replace(" ", "T")) : null);
+
+function eventTimes(s) {
+  const ms = sentMillis(s);
+  return { received: ms ? new Date(ms) : null, accepted: parseLocal(s.confirmed_at), picked: parseLocal(s.picked_up_at),
+    delivered: parseLocal(s.delivered_at), cancelled: parseLocal(s.cancelled_at) };
+}
+
+function reportRange(kind, offset) {
+  const now = new Date();
+  const day0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const fmt = (d, o) => new Intl.DateTimeFormat(lang(), o).format(d);
+  const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+  const addMonths = (d, n) => new Date(d.getFullYear(), d.getMonth() + n, 1);
+  const dayBuckets = (a, b) => { const out = []; for (let d = a; d < b; d = addDays(d, 1)) out.push({ start: d, end: addDays(d, 1), label: fmt(d, { weekday: "short", day: "2-digit", month: "2-digit" }) }); return out; };
+  let start; let end; let buckets = null; let label;
+  if (kind === "day") {
+    start = addDays(day0, offset); end = addDays(start, 1);
+    label = fmt(start, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  } else if (kind === "week") {
+    const monday = addDays(day0, -((day0.getDay() + 6) % 7));
+    start = addDays(monday, offset * 7); end = addDays(start, 7); buckets = dayBuckets(start, end);
+    label = `${fmt(start, { day: "numeric", month: "short" })} – ${fmt(addDays(end, -1), { day: "numeric", month: "short", year: "numeric" })}`;
+  } else if (kind === "month") {
+    start = addMonths(new Date(now.getFullYear(), now.getMonth(), 1), offset); end = addMonths(start, 1); buckets = dayBuckets(start, end);
+    label = fmt(start, { month: "long", year: "numeric" });
+  } else if (kind === "3months") {
+    start = addMonths(new Date(now.getFullYear(), now.getMonth(), 1), offset * 3 - 2); end = addMonths(start, 3);
+    buckets = [];
+    for (let d = start; d < end; d = addDays(d, 7)) {
+      const e = addDays(d, 7) < end ? addDays(d, 7) : end;
+      buckets.push({ start: d, end: e, label: `${fmt(d, { day: "2-digit", month: "2-digit" })} – ${fmt(addDays(e, -1), { day: "2-digit", month: "2-digit" })}` });
+    }
+    label = `${fmt(start, { month: "short" })} – ${fmt(addDays(end, -1), { month: "short", year: "numeric" })}`;
+  } else {
+    start = new Date(now.getFullYear() + offset, 0, 1); end = new Date(now.getFullYear() + offset + 1, 0, 1);
+    buckets = []; for (let m = 0; m < 12; m++) { const d = new Date(start.getFullYear(), m, 1); buckets.push({ start: d, end: addMonths(d, 1), label: fmt(d, { month: "long" }) }); }
+    label = String(start.getFullYear());
+  }
+  return { start, end, buckets, label };
+}
+
+function mountReport(docs) {
+  const box = document.getElementById("report");
+  if (!box) return;
+  const { kind, offset } = reportState;
+  const range = reportRange(kind, offset);
+  const evs = docs.map((s) => ({ s, ev: eventTimes(s) }));
+  const inside = (d, a, b) => d && d >= a && d < b;
+  const count = (key, a, b) => evs.filter((x) => inside(x.ev[key], a, b)).length;
+  const totals = Object.fromEntries(REP_EVENTS.map(([k]) => [k, count(k, range.start, range.end)]));
+  const external = evs.filter((x) => inside(x.ev.received, range.start, range.end) && x.s.external_courier).length;
+  const hmOf = (d, a, b) => (!d ? "—" : inside(d, a, b) ? nowStr(d).slice(11, 16) : `${itDate(nowStr(d)).slice(0, 5)} ${nowStr(d).slice(11, 16)}`);
+  let head; let rows; let csv;
+  if (range.buckets) {
+    head = [t("rep_period"), ...REP_EVENTS.map(([, l]) => t(l))];
+    rows = range.buckets.map((b) => [b.label, ...REP_EVENTS.map(([k]) => count(k, b.start, b.end))]);
+    csv = [head, ...rows, [t("total"), ...REP_EVENTS.map(([k]) => totals[k])]];
+  } else {
+    // giorno: elenco degli ordini con almeno un evento in quel giorno
+    head = [t("code"), t("sender"), ...REP_EVENTS.map(([, l]) => t(l))];
+    rows = evs.filter((x) => REP_EVENTS.some(([k]) => inside(x.ev[k], range.start, range.end)))
+      .sort((a, b) => (a.ev.received || 0) - (b.ev.received || 0))
+      .map((x) => [x.s.code, senderName(x.s), ...REP_EVENTS.map(([k]) => hmOf(x.ev[k], range.start, range.end))]);
+    csv = [head, ...rows];
+  }
+  const tile = (label, n) => `<div class="rep-tile"><div class="rep-n">${n}</div><div class="rep-l">${esc(label)}</div></div>`;
+  box.innerHTML = `<div class="tabs rep-tabs">${[["day", "rep_day"], ["week", "rep_week"], ["month", "rep_month"], ["3months", "rep_3months"], ["year", "rep_year"]]
+      .map(([k, l]) => `<a href="#" data-kind="${k}" class="${k === kind ? "active" : ""}">${esc(t(l))}</a>`).join("")}</div>
+    <div class="rep-nav"><button class="btn btn-ghost small" id="rep-prev" type="button">${esc(t("rep_prev"))}</button>
+      <strong class="rep-label">${esc(range.label)}</strong>
+      <button class="btn btn-ghost small" id="rep-next" type="button" ${offset >= 0 ? "disabled" : ""}>${esc(t("rep_next"))}</button></div>
+    <div class="rep-tiles">${REP_EVENTS.map(([k, l]) => tile(t(l), totals[k])).join("")}${tile(t("rep_external"), external)}</div>
+    <p class="small muted">${esc(t("rep_hint"))}</p>
+    ${rows.length ? `<div class="table-wrap"><table class="rep-table"><thead><tr>${head.map((h, i) => `<th class="${i >= head.length - REP_EVENTS.length ? "num" : ""}">${esc(h)}</th>`).join("")}</tr></thead>
+      <tbody>${rows.map((r) => `<tr>${r.map((c, i) => `<td class="${i >= r.length - REP_EVENTS.length ? "num" : ""} ${c === 0 ? "zero" : ""}">${esc(c)}</td>`).join("")}</tr>`).join("")}</tbody>
+      ${range.buckets ? `<tfoot><tr><th>${esc(t("total"))}</th>${REP_EVENTS.map(([k]) => `<th class="num">${totals[k]}</th>`).join("")}</tr></tfoot>` : ""}</table></div>`
+      : `<div class="empty">${esc(t("rep_no_orders"))}</div>`}
+    <div class="actions" style="margin-top:12px"><button class="btn btn-ghost small" id="rep-csv" type="button">${esc(t("rep_csv"))}</button></div>`;
+  box.querySelectorAll("[data-kind]").forEach((a) => {
+    a.onclick = (e) => { e.preventDefault(); reportState.kind = a.dataset.kind; reportState.offset = 0; mountReport(docs); };
+  });
+  document.getElementById("rep-prev").onclick = () => { reportState.offset -= 1; mountReport(docs); };
+  document.getElementById("rep-next").onclick = () => { if (reportState.offset < 0) { reportState.offset += 1; mountReport(docs); } };
+  document.getElementById("rep-csv").onclick = () => {
+    const cell = (v) => `"${String(v).replace(/"/g, '""')}"`;
+    const text = "﻿" + [[range.label], ...csv].map((r) => r.map(cell).join(";")).join("\r\n");
+    const a = document.createElement("a");
+    a.download = `ixgoo-report-${kind}-${nowStr(range.start).slice(0, 10)}.csv`;
+    a.href = URL.createObjectURL(new Blob([text], { type: "text/csv;charset=utf-8" }));
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  };
+}
+
 // Diritto di accesso e portabilità: profilo e spedizioni dell'utente in un file JSON
 async function exportMyData() {
   const uid = state.user.uid;
@@ -1369,6 +1470,7 @@ function viewProfile(_, __, f, errors = {}) {
   const u = state.profile;
   f = f || { ...u };
   render(`<div class="medium"><h1>${esc(t("nav_profile"))}</h1><p class="muted">${esc(state.user.email)} · ${esc(t("role_" + u.role))}</p>
+    ${u.role === "admin" ? `<section class="card report"><h2>${esc(t("rep_title"))}</h2><div id="report"><div class="empty">${esc(t("loading"))}</div></div></section>` : ""}
     <form class="card" id="prof" novalidate><h2>${esc(t("my_data"))}</h2><div class="grid">${profileGrid(f, errors, false)}</div><p></p>
     <button class="btn btn-primary" type="submit">${esc(t("save"))}</button></form>
     <form class="card" id="pwd"><h2>${esc(t("change_password"))}</h2><div class="grid">
@@ -1383,6 +1485,9 @@ function viewProfile(_, __, f, errors = {}) {
           <div class="grid">${field("delpwd", t("current_password"), {}, errors, { type: "password", col: "col-12", attrs: 'autocomplete="current-password"' })}</div><p></p>
           <button class="btn btn-danger" type="submit">${esc(t("delete_account"))}</button></form></details></section></div>`, t("nav_profile"));
   document.getElementById("export").onclick = exportMyData;
+  if (u.role === "admin") {
+    getDocs(collection(db, "shipments")).then((snap) => mountReport(realDocs(snap))).catch(() => {});
+  }
   document.getElementById("delacc").onsubmit = async (e) => {
     e.preventDefault();
     if (!confirm(t("confirm_delete_account"))) return;

@@ -347,3 +347,16 @@ tr.row-external:hover td { background: #e2f5f2; }
 .day-no { display: inline-grid; place-items: center; min-width: 28px; height: 28px; padding: 0 6px; border-radius: 999px;
   background: var(--black); color: var(--gold); font-weight: 700; font-size: .9rem; }
 .day-date { display: block; font-size: .7rem; color: var(--muted); margin-top: 2px; }
+
+/* report attività (profilo admin) */
+.report h2 { margin-bottom: 12px; }
+.rep-tabs { margin-bottom: 10px; }
+.rep-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.rep-label { text-align: center; flex: 1; }
+.rep-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 8px; }
+.rep-tile { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: #fff; }
+.rep-n { font-size: 1.8rem; font-weight: 700; line-height: 1.1; color: var(--ink); font-variant-numeric: tabular-nums; }
+.rep-l { font-size: .82rem; color: var(--muted); margin-top: 2px; }
+.rep-table td.num, .rep-table th.num { text-align: end; font-variant-numeric: tabular-nums; }
+.rep-table td.zero { color: #c3beb3; }
+.rep-table tfoot th { border-top: 2px solid var(--ink); color: var(--ink); font-size: .9rem; }
