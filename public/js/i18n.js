@@ -278,7 +278,7 @@ export const TR = {
   "flash_assigned": "Η αποστολή {code} ανατέθηκε σε {name}.",
   "flash_unassigned": "Η ανάθεση της {code} αφαιρέθηκε.",
   "order_no": "Α/Α",
-  "order_no_hint": "Α/Α παραγγελίας της ημέρας {date}"
+  "order_no_hint": "Αύξων αριθμός παραγγελίας (δημιουργήθηκε {date})"
  },
  "en": {
   "app_title": "Shipment booking",
@@ -555,7 +555,7 @@ export const TR = {
   "flash_assigned": "Shipment {code} assigned to {name}.",
   "flash_unassigned": "Assignment removed from {code}.",
   "order_no": "No.",
-  "order_no_hint": "Order no. of the day {date}"
+  "order_no_hint": "Order sequence number (created {date})"
  },
  "it": {
   "app_title": "Prenotazione spedizioni",
@@ -832,7 +832,7 @@ export const TR = {
   "flash_assigned": "Spedizione {code} affidata a {name}.",
   "flash_unassigned": "Affidamento rimosso per {code}.",
   "order_no": "N°",
-  "order_no_hint": "Numero dell'ordine del giorno {date}"
+  "order_no_hint": "Numero progressivo dell'ordine (creato il {date})"
  },
  "fr": {
   "app_title": "Réservation d'envois",
@@ -1109,7 +1109,7 @@ export const TR = {
   "flash_assigned": "Envoi {code} confié à {name}.",
   "flash_unassigned": "Affectation retirée pour {code}.",
   "order_no": "N°",
-  "order_no_hint": "N° de commande du jour {date}"
+  "order_no_hint": "Numéro progressif de la commande (créée le {date})"
  },
  "he": {
   "app_title": "הזמנת משלוחים",
@@ -1386,7 +1386,7 @@ export const TR = {
   "flash_assigned": "המשלוח {code} הוקצה ל-{name}.",
   "flash_unassigned": "ההקצאה של {code} הוסרה.",
   "order_no": "מס׳",
-  "order_no_hint": "מספר ההזמנה ביום {date}"
+  "order_no_hint": "מספר רץ של ההזמנה (נוצרה {date})"
  },
  "es": {
   "app_title": "Reserva de envíos",
@@ -1663,7 +1663,7 @@ export const TR = {
   "flash_assigned": "Envío {code} asignado a {name}.",
   "flash_unassigned": "Asignación quitada de {code}.",
   "order_no": "N.º",
-  "order_no_hint": "N.º de pedido del día {date}"
+  "order_no_hint": "Número correlativo del pedido (creado el {date})"
  },
  "de": {
   "app_title": "Sendungsbuchung",
@@ -1940,7 +1940,7 @@ export const TR = {
   "flash_assigned": "Sendung {code} an {name} zugewiesen.",
   "flash_unassigned": "Zuweisung für {code} entfernt.",
   "order_no": "Nr.",
-  "order_no_hint": "Auftragsnummer des Tages {date}"
+  "order_no_hint": "Laufende Auftragsnummer (erstellt am {date})"
  },
  "ru": {
   "app_title": "Бронирование отправлений",
@@ -2217,7 +2217,7 @@ export const TR = {
   "flash_assigned": "Отправление {code} передано: {name}.",
   "flash_unassigned": "Назначение {code} снято.",
   "order_no": "№",
-  "order_no_hint": "№ заказа за день {date}"
+  "order_no_hint": "Порядковый номер заказа (создан {date})"
  },
  "zh": {
   "app_title": "快递预约",
@@ -2494,6 +2494,6 @@ export const TR = {
   "flash_assigned": "快递 {code} 已委派给 {name}。",
   "flash_unassigned": "已取消 {code} 的委派。",
   "order_no": "序号",
-  "order_no_hint": "{date} 当天订单序号"
+  "order_no_hint": "订单流水号（创建于 {date}）"
  }
 };

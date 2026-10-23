@@ -1143,16 +1143,11 @@ function viewAdmin(_, params) {
   unsubs.push(onSnapshot(collection(db, "shipments"), (snap) => {
     allowed();
     const dayOf = (s) => s.pickup_date || (s.created_at || "").slice(0, 10);
-    // numero progressivo dell'ordine nel suo giorno di creazione (1, 2, 3… ogni giorno), calcolato su
-    // tutti gli ordini già caricati: non cambia con filtri e ordinamento, nessuna lettura in più
+    // numero progressivo unico per ogni ordine (codice): 1 = il più vecchio, in ordine di creazione,
+    // calcolato su tutti gli ordini già caricati; non cambia con filtri e ordinamento, nessuna lettura in più
     const dayNo = new Map();
-    const perDay = new Map();
-    for (const s of realDocs(snap).sort((a, b) => (a.created_at || "").localeCompare(b.created_at || "") || a.code.localeCompare(b.code))) {
-      const day = (s.created_at || "").slice(0, 10);
-      const n = (perDay.get(day) || 0) + 1;
-      perDay.set(day, n);
-      dayNo.set(s.code, n);
-    }
+    realDocs(snap).sort((a, b) => (a.created_at || "").localeCompare(b.created_at || "") || a.code.localeCompare(b.code))
+      .forEach((s, i) => dayNo.set(s.code, i + 1));
     const all = realDocs(snap).filter((s) => !from || (dayOf(s) >= from && dayOf(s) <= to));
     const counts = Object.fromEntries(STATUS.map((st) => [st, all.filter((s) => s.status === st).length]));
     document.getElementById("tabs").innerHTML = `<a href="${adminLink({ stato: "tutte" })}" class="${STATUS.includes(status) ? "" : "active"}">${esc(t("all"))}<span class="count">${all.length}</span></a>`
