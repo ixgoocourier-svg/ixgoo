@@ -89,7 +89,9 @@ service cloud.firestore {
           && request.resource.data.delivered_at == null
           && request.resource.data.tipo in ['busta', 'pacco']
           && request.resource.data.colli is int
-          && request.resource.data.colli >= 1 && request.resource.data.colli <= 99;
+          && request.resource.data.colli >= 1 && request.resource.data.colli <= 99
+          // ora di invio: se presente deve essere quella del server (serve alla numerazione degli ordini)
+          && request.resource.data.get('sent_at', request.time) == request.time;
       }
 
       allow create: if validShipment(code) && (

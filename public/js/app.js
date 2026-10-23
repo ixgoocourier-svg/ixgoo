@@ -8,7 +8,7 @@ import {
   EmailAuthProvider, updatePassword, deleteUser,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, collection, query, where, onSnapshot,
+  getFirestore, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, collection, query, where, onSnapshot, serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 import { LANGS, DEFAULT_LANG, RTL, TR } from "./i18n.js";
@@ -22,6 +22,8 @@ const db = getFirestore(fb);
 const STATUS = ["in_attesa", "confermata", "ritirata", "consegnata", "annullata"];
 // stati in cui esiste l'etichetta con QR
 // spedizioni create dai test automatici (campo is_test): ignorate ovunque nell'app
+const sentMillis = (s) => (s.sent_at && typeof s.sent_at.toMillis === "function" ? s.sent_at.toMillis()
+  : Date.parse((s.created_at || "").replace(" ", "T")) || 0);
 const realDocs = (snap) => snap.docs.map((d) => d.data()).filter((s) => !s.is_test);
 const hasLabel = (s) => ["confermata", "ritirata", "consegnata"].includes(s.status);
 // questi indirizzi diventano admin alla registrazione (stessa lista in firestore.rules)
@@ -784,7 +786,7 @@ function viewNew(_, __, f, errors = {}, edit = null) {
       const code = newCode();
       try {
         // se il codice esistesse già, la scrittura diventerebbe una modifica e le regole la rifiutano
-        await setDoc(doc(db, "shipments", code), { ...data, code });
+        await setDoc(doc(db, "shipments", code), { ...data, code, sent_at: serverTimestamp() });
         {
           notifyAdmins({ ...data, code })
             .then((alert) => updateDoc(doc(db, "shipments", code), { alert: `${alert} · ${nowStr().slice(11, 16)}`.slice(0, 200) }))
@@ -1101,7 +1103,7 @@ function viewAdmin(_, params) {
   const status = params.get("stato") || "tutte";
   const q0 = params.get("q") || "";
   // ordinamento cliccando sulle intestazioni della tabella
-  const SORTS = ["codice", "ritiro", "mittente", "destinazione", "consegna", "stato"];
+  const SORTS = ["numero", "codice", "ritiro", "mittente", "destinazione", "consegna", "stato"];
   const sortKey = SORTS.includes(params.get("ordina")) ? params.get("ordina") : "ritiro";
   const desc = params.get("dir") === "desc";
   // filtro per data di ritiro (se manca: giorno di creazione); un solo giorno se c'è solo "dal"
@@ -1143,10 +1145,10 @@ function viewAdmin(_, params) {
   unsubs.push(onSnapshot(collection(db, "shipments"), (snap) => {
     allowed();
     const dayOf = (s) => s.pickup_date || (s.created_at || "").slice(0, 10);
-    // numero progressivo unico per ogni ordine (codice): 1 = il più vecchio, in ordine di creazione,
-    // calcolato su tutti gli ordini già caricati; non cambia con filtri e ordinamento, nessuna lettura in più
+    // numero progressivo unico per ogni ordine (codice) in ordine di invio: 1 = il primo inviato.
+    // Calcolato su tutti gli ordini già caricati; non cambia con filtri e ordinamento, nessuna lettura in più
     const dayNo = new Map();
-    realDocs(snap).sort((a, b) => (a.created_at || "").localeCompare(b.created_at || "") || a.code.localeCompare(b.code))
+    realDocs(snap).sort((a, b) => (sentMillis(a) - sentMillis(b)) || a.code.localeCompare(b.code))
       .forEach((s, i) => dayNo.set(s.code, i + 1));
     const all = realDocs(snap).filter((s) => !from || (dayOf(s) >= from && dayOf(s) <= to));
     const counts = Object.fromEntries(STATUS.map((st) => [st, all.filter((s) => s.status === st).length]));
@@ -1158,6 +1160,7 @@ function viewAdmin(_, params) {
     // valore su cui ordinare per ogni colonna; i valori vuoti finiscono sempre in fondo
     const collator = new Intl.Collator(lang(), { sensitivity: "base", numeric: true });
     const value = {
+      numero: (s) => String(dayNo.get(s.code) || 0).padStart(7, "0"),
       codice: (s) => s.code,
       ritiro: (s) => (s.pickup_date ? `${s.pickup_date} ${s.pickup_time || ""}` : ""),
       mittente: (s) => (senderName(s) === "—" ? "" : senderName(s)),
@@ -1173,7 +1176,7 @@ function viewAdmin(_, params) {
     rows = withValue.concat(rows.filter((s) => !value(s)).sort(byPickup));
     const el = document.getElementById("list");
     const th = (key, label) => `<th><a class="th-sort ${sortKey === key ? "on" : ""}" href="${adminLink({ ordina: key, dir: sortKey === key && !desc ? "desc" : "asc" })}">${esc(t(label))}<span>${sortKey === key ? (desc ? " ▼" : " ▲") : " ↕"}</span></a></th>`;
-    el.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr><th class="col-no">${esc(t("order_no"))}</th>${th("codice", "code")}${th("ritiro", "pickup")}${th("mittente", "sender")}
+    el.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr>${th("numero", "order_no").replace("<th>", '<th class="col-no">')}${th("codice", "code")}${th("ritiro", "pickup")}${th("mittente", "sender")}
       ${th("destinazione", "destination")}${th("consegna", "delivery")}${th("stato", "status")}</tr></thead><tbody>${rows.map((s) => `
       <tr class="rowlink ${s.external_courier ? "row-external" : ""}" data-href="#/spedizione/${esc(s.code)}"><td class="col-no" title="${esc(t("order_no_hint", { date: itDate(s.created_at) }))}"><span class="day-no">${dayNo.get(s.code) || ""}</span><span class="day-date">${itDate(s.created_at).slice(0, 5)}</span></td><td class="code">${esc(s.code)}</td>
       <td><strong>${itDate(s.pickup_date)} ${esc(s.pickup_time)}</strong><br><span class="muted small">${esc(s.pickup_citta)}</span></td>
